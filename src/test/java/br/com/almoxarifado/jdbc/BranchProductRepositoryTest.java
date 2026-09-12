@@ -52,9 +52,9 @@ public class BranchProductRepositoryTest {
     void addQuantityBranchProductRepository() {
         BranchProduct branchProduct = branchProductRepository.findBranchProduct(2);
         Movement movement = new Movement(100, MovementType.ENTRY, OriginType.INVOICE, "500");
-        int rows = branchProductRepository.addQuantity(branchProduct,movement);
-        assertEquals(2, rows);
-    //não sei o que validar mais, por que todas as outras informações alteram quando eu rodo o teste...
+        boolean rows = branchProductRepository.addQuantity(branchProduct, movement);
+        assertTrue(rows);
+        //não sei o que validar mais, por que todas as outras informações alteram quando eu rodo o teste...
     }
 
 

@@ -214,19 +214,20 @@ public class BranchProductRepository {
                             throw new InvalidQuantityException();
                         }
                     }
-
-                    String uuid = movement.getUuid().toString();
-                    preparedStatement.setString(1, uuid);
-                    preparedStatement.setString(2, movement.getOriginType().toString());
-                    preparedStatement.setString(3, movement.getOriginNumber());
-                    preparedStatement.setString(4, movement.getMovementType().toString());
-                    preparedStatement.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
-                    preparedStatement.setInt(6, movement.getQuantity());
-                    preparedStatement.setInt(7, branchProduct.getId());
-                    preparedStatement.executeUpdate();
-                    connection.commit();
-                    return true;
                 }
+                String uuid = movement.getUuid().toString();
+                preparedStatement.setString(1, uuid);
+                preparedStatement.setString(2, movement.getOriginType().toString());
+                preparedStatement.setString(3, movement.getOriginNumber());
+                preparedStatement.setString(4, movement.getMovementType().toString());
+                preparedStatement.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
+                preparedStatement.setInt(6, movement.getQuantity());
+                preparedStatement.setInt(7, branchProduct.getId());
+                preparedStatement.executeUpdate();
+                connection.commit();
+                return true;
+
+
             } catch (SQLException operationError) {
                 try {
                     connection.rollback();
@@ -235,8 +236,61 @@ public class BranchProductRepository {
                 }
                 throw new RuntimeException(operationError);
             }
+
         } catch (SQLException errorConnection) {
             throw new RuntimeException(errorConnection);
+        }
+    }
+
+    public boolean save(BranchProduct branchProduct, Movement movement) {
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        String insertBranchProduct = """
+                INSERT INTO branch_product(quantity, location,
+                product_id, branch_id)
+                VALUES(?, ?, ?, ?);
+                """;
+        String insertMovement = """
+                INSERT INTO movement(id_movement, originType, originNumber,
+                 movementType, date, quantity, fk_branchProduct)
+                VALUES(?, ?, ?, ?, ?, ?, ?);
+                """;
+        try (Connection c = databaseConnection.connect()) {
+
+            try (PreparedStatement ps = c.prepareStatement(insertBranchProduct, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement ps1 = c.prepareStatement(insertMovement)) {
+
+                c.setAutoCommit(false);
+
+                ps.setInt(1, movement.getQuantity());
+                ps.setString(2, branchProduct.getLocation());
+                ps.setInt(3, branchProduct.getProduct().getId());
+                ps.setInt(4, branchProduct.getBranch().getId());
+                ps.executeUpdate();
+                try (ResultSet generatedKey = ps.getGeneratedKeys()) {
+                    generatedKey.next();
+                    int idBranchproduct = generatedKey.getInt(1);
+
+                    ps1.setString(1, movement.getUuid().toString());
+                    ps1.setString(2, movement.getOriginType().toString());
+                    ps1.setString(3, movement.getOriginNumber());
+                    ps1.setString(4, movement.getMovementType().toString());
+                    ps1.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
+                    ps1.setInt(6, movement.getQuantity());
+                    ps1.setInt(7, idBranchproduct);
+                    ps1.executeUpdate();
+                    c.commit();
+                    return true;
+                }
+            } catch (SQLException transactionError) {
+                try {
+                    c.rollback();
+                } catch (SQLException rollbackError) {
+                    throw new RuntimeException(rollbackError);
+                }
+                throw new RuntimeException(transactionError);
+            }
+        } catch (SQLException sqlException) {
+            throw new RuntimeException(sqlException);
         }
     }
 
