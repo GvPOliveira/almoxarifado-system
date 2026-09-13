@@ -41,22 +41,23 @@ public class Invoice {
         productInvoiceList.add(newProductInvoice);
     }
 
-    public void processInvoice() {
-        if(productInvoiceList.isEmpty()){
+    public void validateCanBeProcessed() {
+        if(this.productInvoiceList.isEmpty()){
             throw new CannotProcessInvoiceWithoutProductsException();
         }
-        if (processed) {
+        if (this.processed) {
             throw new InvoiceAlreadyProcessedException();
         }
-        for (int i = 0; i < productInvoiceList.size(); i++) {
-            Destination destination = productInvoiceList.get(i).getDestination();
-            if (destination == Destination.STOCK) {
-                ProductInvoice productInvoice = productInvoiceList.get(i);
-                branchDestination.receiveProduct(productInvoice.getProduct(), productInvoice.getQuantity(), OriginType.INVOICE, this.numberInvoice);
-            }
-        }
+    }
+
+    private void markAsProcessed(){
         processed = true;
     }
+
+    public void completeProcessing(){
+        markAsProcessed();
+    }
+
 
 
     public String getNumberInvoice() {

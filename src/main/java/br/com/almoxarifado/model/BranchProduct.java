@@ -52,9 +52,29 @@ public class BranchProduct {
         movementView = Collections.unmodifiableList(movementList);
     }
 
+    private BranchProduct(int id_bp, Product product, Branch branch, int quantity, String location) {
+        if (quantity <= 0) {
+            throw new InvalidQuantityException();
+        }
+        this.id = id_bp;
+        this.product = product;
+        this.branch = branch;
+        this.quantity = quantity;
+        this.location = location;
+        this.movementList = new ArrayList<>();
+        movementView = Collections.unmodifiableList(movementList);
+    }
 
-    public static BranchProduct reconstructor(int bp_id, Product product, Branch branch, int quantity, String location, List<Movement> movementList) {
+
+    public static BranchProduct reconstructor(int bp_id, Product product, Branch branch,
+                                              int quantity, String location, List<Movement> movementList) {
         BranchProduct branchProduct = new BranchProduct(bp_id, product, branch, quantity, location, movementList);
+        return branchProduct;
+    }
+
+    public static BranchProduct reconstructor(int bp_id, Product product, Branch branch,
+                                              int quantity, String location) {
+        BranchProduct branchProduct = new BranchProduct(bp_id, product, branch, quantity, location);
         return branchProduct;
     }
 
@@ -74,10 +94,10 @@ public class BranchProduct {
             throw new InsufficientStockException("Insufficient Stock. Available: " + this.quantity + ", requested: " + quantity);
         }
         this.quantity -= quantity;
-        if(quantity > 0) {
+        if (quantity > 0) {
             registerMovement(quantity, MovementType.OUTPUT, originType, originNumber);
         }
-        }
+    }
 
     public void processReversal(int quantity, OriginType originType, String originNumber) {
         if (quantity <= 0) {
@@ -124,12 +144,12 @@ public class BranchProduct {
     @Override
     public String toString() {
         return "BranchProduct{" +
-                "product=" + getProduct().getId() + ", '" + getProduct().getCode() +
-                "' - " + getProduct().getDescription() +
-                ", branch=" + getBranch().getId() + ", '" + getBranch().getCode() +
-                "' - " + getBranch().getName() +
-                ", quantity=" + getQuantity() +
-                ", location='" + getLocation() + '\'' +
+                "product_id =" + getProduct().getId() + "\nCode: " + getProduct().getCode() +
+                "\nName- " + getProduct().getDescription() +
+                "\nbranch_id =" + getBranch().getId() + "\nCode: " + getBranch().getCode() +
+                "\nName- " + getBranch().getName() +
+                "\nquantity= " + getQuantity() +
+                "\nlocation= " + getLocation() + '\'' +
                 '}';
     }
 

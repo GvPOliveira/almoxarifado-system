@@ -133,19 +133,66 @@ public class BranchProductRepository {
         }
     }
 
-    public boolean addQuantity(BranchProduct branchProduct, Movement movement) {
+
+    public BranchProduct findBranchProduct(int productId, int branchId) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
+        String sql = """
+                SELECT bp.id_branchProduct, bp.quantity, bp.location, 
+                       p.id_product, p.code as product_code, p.name as product_name,
+                       b.id_branch, b.code as branch_code,b.name as branch_name
+                FROM branch_product bp
+                INNER JOIN product p 
+                ON p.id_product = bp.product_id
+                INNER JOIN branch b 
+                ON b.id_branch = bp.branch_id
+                WHERE bp.product_id = ?
+                AND bp.branch_id = ?;
+                """;
+        try (Connection c = databaseConnection.connect();
+             PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+            preparedStatement.setInt(1, productId);
+            preparedStatement.setInt(2, branchId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return null;
+                }
+
+                int id_bp, quantity;
+                String location;
+
+                Product product = new Product(resultSet.getString("product_code"),
+                        resultSet.getString("product_name"));
+                product.assignId(resultSet.getInt("id_product"));
+
+                Branch branch = new Branch(resultSet.getString("branch_code"),
+                        resultSet.getString("branch_name"));
+                branch.assignId(resultSet.getInt("id_branch"));
+
+                id_bp = resultSet.getInt("id_branchProduct");
+                quantity = resultSet.getInt("quantity");
+                location = resultSet.getString("location");
+
+                BranchProduct branchProduct = BranchProduct.reconstructor(id_bp, product, branch, quantity, location);
+
+                return branchProduct;
+            }
+        } catch (SQLException connectionError) {
+            throw new RuntimeException(connectionError);
+        }
+
+
+    }
+
+
+    public void addQuantity(BranchProduct branchProduct, Movement movement, Connection connection) {
         String update = "UPDATE branch_product SET quantity = quantity + ? Where id_branchProduct = ?";
         String insert = """
                 INSERT INTO movement(id_movement, originType, originNumber, movementType, date, quantity, fk_branchProduct)
                 VALUES(?, ?, ?, ?, ?, ?, ?);
                 """;
 
-        try (Connection connection = databaseConnection.connect()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(update);
                  PreparedStatement ps = connection.prepareStatement(insert)) {
-
-                connection.setAutoCommit(false);
                 preparedStatement.setInt(2, branchProduct.getId());
 
                 preparedStatement.setInt(1, movement.getQuantity());
@@ -163,20 +210,9 @@ public class BranchProductRepository {
                 ps.setInt(6, movement.getQuantity());
                 ps.setInt(7, branchProduct.getId());
                 ps.executeUpdate();
-
-                connection.commit();
-                return true;
             } catch (SQLException errorAddQuantity) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackFail) {
-                    throw new RuntimeException(rollbackFail);
-                }
                 throw new RuntimeException(errorAddQuantity);
             }
-        } catch (SQLException connectionError) {
-            throw new RuntimeException(connectionError);
-        }
     }
 
 
@@ -242,8 +278,7 @@ public class BranchProductRepository {
         }
     }
 
-    public boolean save(BranchProduct branchProduct, Movement movement) {
-        DatabaseConnection databaseConnection = new DatabaseConnection();
+    public void save(BranchProduct branchProduct, Movement movement, Connection c) {
         String insertBranchProduct = """
                 INSERT INTO branch_product(quantity, location,
                 product_id, branch_id)
@@ -254,12 +289,8 @@ public class BranchProductRepository {
                  movementType, date, quantity, fk_branchProduct)
                 VALUES(?, ?, ?, ?, ?, ?, ?);
                 """;
-        try (Connection c = databaseConnection.connect()) {
-
             try (PreparedStatement ps = c.prepareStatement(insertBranchProduct, Statement.RETURN_GENERATED_KEYS);
                  PreparedStatement ps1 = c.prepareStatement(insertMovement)) {
-
-                c.setAutoCommit(false);
 
                 ps.setInt(1, movement.getQuantity());
                 ps.setString(2, branchProduct.getLocation());
@@ -278,20 +309,10 @@ public class BranchProductRepository {
                     ps1.setInt(6, movement.getQuantity());
                     ps1.setInt(7, idBranchproduct);
                     ps1.executeUpdate();
-                    c.commit();
-                    return true;
                 }
             } catch (SQLException transactionError) {
-                try {
-                    c.rollback();
-                } catch (SQLException rollbackError) {
-                    throw new RuntimeException(rollbackError);
-                }
                 throw new RuntimeException(transactionError);
             }
-        } catch (SQLException sqlException) {
-            throw new RuntimeException(sqlException);
-        }
     }
 
 

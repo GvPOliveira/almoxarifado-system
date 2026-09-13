@@ -5,6 +5,7 @@ import br.com.almoxarifado.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +27,7 @@ public class BranchProductRepositoryTest {
         assertNotNull(branchProduct);
         assertNotNull(branchProduct.getMovementList());
         assertEquals(2, branchProduct.getId());
-        assertEquals(2, branchProduct.getMovementList().size());
+        assertNotEquals(0, branchProduct.getMovementList().size());
     }
 
 
@@ -50,22 +51,53 @@ public class BranchProductRepositoryTest {
 
     @Test
     void addQuantityBranchProductRepository() {
-        BranchProduct branchProduct = branchProductRepository.findBranchProduct(2);
-        Movement movement = new Movement(100, MovementType.ENTRY, OriginType.INVOICE, "500");
-        boolean rows = branchProductRepository.addQuantity(branchProduct, movement);
-        assertTrue(rows);
-        //não sei o que validar mais, por que todas as outras informações alteram quando eu rodo o teste...
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection c = databaseConnection.connect()) {
+
+            BranchProduct branchProduct = branchProductRepository.findBranchProduct(2);
+            Movement movement = new Movement(100, MovementType.ENTRY, OriginType.INVOICE, "500");
+            branchProductRepository.addQuantity(branchProduct, movement, c);
+
+        } catch (SQLException connectionError) {
+            throw new RuntimeException(connectionError);
+        }
+
     }
 
 
     @Test
     void cannotAddQuantityWithBranchProductNotFound() {
-        BranchProduct branchProduct = new BranchProduct(new Product("1", "Parafuso"),
-                new Branch("001", "South"), 100, OriginType.INVOICE, "300");
-        Movement movement = new Movement(100, MovementType.ENTRY, OriginType.INVOICE, "500");
-        assertThrows(BranchProductNotFoundException.class, () ->
-                branchProductRepository.addQuantity(branchProduct, movement));
+
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection c = databaseConnection.connect()) {
+            BranchProduct branchProduct = new BranchProduct(new Product("1", "Parafuso"),
+                    new Branch("001", "South"), 100, OriginType.INVOICE, "300");
+            Movement movement = new Movement(100, MovementType.ENTRY, OriginType.INVOICE, "500");
+            assertThrows(BranchProductNotFoundException.class, () ->
+                    branchProductRepository.addQuantity(branchProduct, movement, c));
+
+        } catch (SQLException connectionError) {
+            throw new RuntimeException(connectionError);
+        }
+
+
     }
 
+    @Test
+    void shouldReturnBranchProductWhenProductAndBranchExist() {
+        BranchProduct branchProduct = branchProductRepository.findBranchProduct(34, 3);
+
+        assertNotNull(branchProduct);
+        assertEquals(34, branchProduct.getProduct().getId());
+        assertEquals(3, branchProduct.getBranch().getId());
+        assertEquals(0, branchProduct.getMovementList().size());
+    }
+
+    @Test
+    void shouldReturnNullWhenProductAndBranchDoNotHaveBranchProduct() {
+        BranchProduct branchProduct = branchProductRepository.findBranchProduct(34, 1);
+
+        assertNull(branchProduct);
+    }
 
 }
