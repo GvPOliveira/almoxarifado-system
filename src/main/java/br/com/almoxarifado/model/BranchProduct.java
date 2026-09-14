@@ -65,6 +65,16 @@ public class BranchProduct {
         movementView = Collections.unmodifiableList(movementList);
     }
 
+    public void assignId(int id) {
+        if (id <= 0) {
+            throw new InvalidProductIdException();
+        }
+        if (this.id != 0) {
+            throw new BranchAlreadyExists();
+        } else {
+            this.id = id;
+        }
+    }
 
     public static BranchProduct reconstructor(int bp_id, Product product, Branch branch,
                                               int quantity, String location, List<Movement> movementList) {

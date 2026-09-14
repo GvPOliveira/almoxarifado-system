@@ -1,8 +1,10 @@
 package br.com.almoxarifado.jdbc;
 
 
+import br.com.almoxarifado.exception.InsufficientStockException;
 import br.com.almoxarifado.model.*;
 import br.com.almoxarifado.service.InvoiceService;
+import br.com.almoxarifado.service.RequestService;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +37,6 @@ public class Main {
         boolean result = branchProductRepository.save(branchProduct, movement);
 
         System.out.println(result);*/
-        InvoiceService invoiceService = new InvoiceService(branchProductRepository);
         Product product1 = new Product("001", "Caneta Azul");
         product1.assignId(17);
         Product product2 = new Product("002", "Parafuso 1/2");
@@ -45,16 +46,33 @@ public class Main {
         Product product4 = new Product("999", "Parafuso");
         Branch branch = new Branch("01", "Filial Sul");
         branch.assignId(01);
-        Invoice invoice = new Invoice("566", branch);
-        invoice.addProductInvoice(product1, 50, Destination.STOCK);
-        invoice.addProductInvoice(product2, 50, Destination.STOCK);
-        invoice.addProductInvoice(product3, 50, Destination.STOCK);
-        invoice.addProductInvoice(product4, 300, Destination.STOCK);
-        invoiceService.processInvoice(invoice);
 
-       // BranchProduct branchProduct = branchProductRepository.findBranchProduct(34, 3);
-       //  System.out.println(branchProduct);
+        BranchProduct newBranchproduct = new BranchProduct(product1, branch, 60,
+                OriginType.INVOICE, "006");
+        newBranchproduct.assignId(1);
 
+        branch.addProduct(newBranchproduct);
+
+        //   BranchProduct branchProduct2 = BranchProduct.reconstructor(2,product2,branch,60,"");
+        //  BranchProduct branchProduct3 = BranchProduct.reconstructor(3,product3,branch,60,"");
+
+
+        RequestService requestService = new RequestService(branchProductRepository);
+
+        Request request = new Request("00000000", branch);
+        request.addProductRequest(product1, 120);
+        System.out.println("Antes: " +
+                request.getProductRequestMap().get("001").isProcessed());
+        try {
+            requestService.attendedProduct(request, "001", 70);
+        } catch (InsufficientStockException e) {
+            System.out.println("Exceção esperada: " + e.getMessage());
+        }
+
+        System.out.println(request.getProductRequestMap().get("001").isProcessed());
+
+        // BranchProduct branchProduct = branchProductRepository.findBranchProduct(34, 3);
+        //  System.out.println(branchProduct);
 
     }
 

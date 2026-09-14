@@ -42,7 +42,7 @@ public class Request {
     public void attendedProduct(String code, int attendedQuantity) {
         ProductRequest findProductRequest = findProductRequest(code);
         if (findProductRequest != null) {
-            findProductRequest.attendedQuantity(attendedQuantity);
+            findProductRequest.validateCanBeProcessed(attendedQuantity);
             return;
         }
         throw new ProductNotFoundInRequestException();

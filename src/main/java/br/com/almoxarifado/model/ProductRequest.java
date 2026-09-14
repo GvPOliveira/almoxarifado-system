@@ -11,8 +11,8 @@ public class ProductRequest {
     private boolean reversed, processed;
 
 
-    public ProductRequest(Request request ,BranchProduct branchProduct, int requestedQuantity) {
-        if(requestedQuantity <= 0){
+    public ProductRequest(Request request, BranchProduct branchProduct, int requestedQuantity) {
+        if (requestedQuantity <= 0) {
             throw new InvalidQuantityException();
         }
         this.request = request;
@@ -24,7 +24,7 @@ public class ProductRequest {
     }
 
 
-    public void attendedQuantity(int attendedQuantity) {
+    public void validateCanBeProcessed(int attendedQuantity) {
         if (processed) {
             throw new ProductRequestAlreadyProcessedException();
         }
@@ -34,10 +34,11 @@ public class ProductRequest {
         if (attendedQuantity > requestedQuantity) {
             throw new RequestedQuantityExceededException();
         }
-        branchProduct.removeQuantity(attendedQuantity, OriginType.REQUEST, request.getNumberRequest());
-        this.attendedQuantity = attendedQuantity;
-        this.processed = true;
+    }
 
+    public void completeProcessing(int quantity) {
+        this.attendedQuantity = quantity;
+        processed = true;
     }
 
 

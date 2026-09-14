@@ -1,7 +1,7 @@
 package br.com.almoxarifado.jdbc;
 
 import br.com.almoxarifado.exception.BranchProductNotFoundException;
-import br.com.almoxarifado.exception.InvalidQuantityException;
+import br.com.almoxarifado.exception.InsufficientStockException;
 import br.com.almoxarifado.model.*;
 
 import java.sql.*;
@@ -191,33 +191,32 @@ public class BranchProductRepository {
                 VALUES(?, ?, ?, ?, ?, ?, ?);
                 """;
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(update);
-                 PreparedStatement ps = connection.prepareStatement(insert)) {
-                preparedStatement.setInt(2, branchProduct.getId());
+        try (PreparedStatement preparedStatement = connection.prepareStatement(update);
+             PreparedStatement ps = connection.prepareStatement(insert)) {
+            preparedStatement.setInt(2, branchProduct.getId());
 
-                preparedStatement.setInt(1, movement.getQuantity());
-                int updateRows = preparedStatement.executeUpdate();
-                if (updateRows == 0) {
-                    throw new BranchProductNotFoundException();
-                }
-
-                String uuid = movement.getUuid().toString();
-                ps.setString(1, uuid);
-                ps.setString(2, movement.getOriginType().toString());
-                ps.setString(3, movement.getOriginNumber());
-                ps.setString(4, movement.getMovementType().toString());
-                ps.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
-                ps.setInt(6, movement.getQuantity());
-                ps.setInt(7, branchProduct.getId());
-                ps.executeUpdate();
-            } catch (SQLException errorAddQuantity) {
-                throw new RuntimeException(errorAddQuantity);
+            preparedStatement.setInt(1, movement.getQuantity());
+            int updateRows = preparedStatement.executeUpdate();
+            if (updateRows == 0) {
+                throw new BranchProductNotFoundException();
             }
+
+            String uuid = movement.getUuid().toString();
+            ps.setString(1, uuid);
+            ps.setString(2, movement.getOriginType().toString());
+            ps.setString(3, movement.getOriginNumber());
+            ps.setString(4, movement.getMovementType().toString());
+            ps.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
+            ps.setInt(6, movement.getQuantity());
+            ps.setInt(7, branchProduct.getId());
+            ps.executeUpdate();
+        } catch (SQLException errorAddQuantity) {
+            throw new RuntimeException(errorAddQuantity);
+        }
     }
 
 
-    public boolean removeQuantity(BranchProduct branchProduct, Movement movement) {
-        DatabaseConnection databaseConnection = new DatabaseConnection();
+    public void removeQuantity(BranchProduct branchProduct, Movement movement, Connection connection) {
         String update = """
                 UPDATE branch_product
                 SET quantity = quantity - ?
@@ -230,51 +229,37 @@ public class BranchProductRepository {
                 VALUES(?, ?, ?, ?, ?, ?, ?);
                 """;
         String select = "SELECT quantity FROM branch_product WHERE id_branchProduct = ?";
-        try (Connection connection = databaseConnection.connect()) {
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(insert);
-                 PreparedStatement ps = connection.prepareStatement(update);
-                 PreparedStatement ps2 = connection.prepareStatement(select)) {
-                connection.setAutoCommit(false);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insert);
+             PreparedStatement ps = connection.prepareStatement(update);
+             PreparedStatement ps2 = connection.prepareStatement(select)) {
 
-                ps.setInt(1, movement.getQuantity());
-                ps.setInt(2, branchProduct.getId());
-                ps.setInt(3, movement.getQuantity());
-                int updateRowsAffeted = ps.executeUpdate();
-                if (updateRowsAffeted == 0) {
-                    ps2.setInt(1, branchProduct.getId());
-                    try (ResultSet rowsFound = ps2.executeQuery()) {
-                        if (!rowsFound.next()) {
-                            throw new BranchProductNotFoundException();
-                        } else {
-                            throw new InvalidQuantityException();
-                        }
+            ps.setInt(1, movement.getQuantity());
+            ps.setInt(2, branchProduct.getId());
+            ps.setInt(3, movement.getQuantity());
+            int updateRowsAffeted = ps.executeUpdate();
+            if (updateRowsAffeted == 0) {
+                ps2.setInt(1, branchProduct.getId());
+                try (ResultSet rowsFound = ps2.executeQuery()) {
+                    if (!rowsFound.next()) {
+                        throw new BranchProductNotFoundException();
+                    } else {
+                        throw new InsufficientStockException("Quantidade superior a quantidade disponivel no estoque.");
                     }
                 }
-                String uuid = movement.getUuid().toString();
-                preparedStatement.setString(1, uuid);
-                preparedStatement.setString(2, movement.getOriginType().toString());
-                preparedStatement.setString(3, movement.getOriginNumber());
-                preparedStatement.setString(4, movement.getMovementType().toString());
-                preparedStatement.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
-                preparedStatement.setInt(6, movement.getQuantity());
-                preparedStatement.setInt(7, branchProduct.getId());
-                preparedStatement.executeUpdate();
-                connection.commit();
-                return true;
-
-
-            } catch (SQLException operationError) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackError) {
-                    throw new RuntimeException(rollbackError);
-                }
-                throw new RuntimeException(operationError);
             }
+            String uuid = movement.getUuid().toString();
+            preparedStatement.setString(1, uuid);
+            preparedStatement.setString(2, movement.getOriginType().toString());
+            preparedStatement.setString(3, movement.getOriginNumber());
+            preparedStatement.setString(4, movement.getMovementType().toString());
+            preparedStatement.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
+            preparedStatement.setInt(6, movement.getQuantity());
+            preparedStatement.setInt(7, branchProduct.getId());
+            preparedStatement.executeUpdate();
 
-        } catch (SQLException errorConnection) {
-            throw new RuntimeException(errorConnection);
+        } catch (SQLException operationError) {
+            throw new RuntimeException(operationError);
         }
     }
 
@@ -289,30 +274,30 @@ public class BranchProductRepository {
                  movementType, date, quantity, fk_branchProduct)
                 VALUES(?, ?, ?, ?, ?, ?, ?);
                 """;
-            try (PreparedStatement ps = c.prepareStatement(insertBranchProduct, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement ps1 = c.prepareStatement(insertMovement)) {
+        try (PreparedStatement ps = c.prepareStatement(insertBranchProduct, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement ps1 = c.prepareStatement(insertMovement)) {
 
-                ps.setInt(1, movement.getQuantity());
-                ps.setString(2, branchProduct.getLocation());
-                ps.setInt(3, branchProduct.getProduct().getId());
-                ps.setInt(4, branchProduct.getBranch().getId());
-                ps.executeUpdate();
-                try (ResultSet generatedKey = ps.getGeneratedKeys()) {
-                    generatedKey.next();
-                    int idBranchproduct = generatedKey.getInt(1);
+            ps.setInt(1, movement.getQuantity());
+            ps.setString(2, branchProduct.getLocation());
+            ps.setInt(3, branchProduct.getProduct().getId());
+            ps.setInt(4, branchProduct.getBranch().getId());
+            ps.executeUpdate();
+            try (ResultSet generatedKey = ps.getGeneratedKeys()) {
+                generatedKey.next();
+                int idBranchproduct = generatedKey.getInt(1);
 
-                    ps1.setString(1, movement.getUuid().toString());
-                    ps1.setString(2, movement.getOriginType().toString());
-                    ps1.setString(3, movement.getOriginNumber());
-                    ps1.setString(4, movement.getMovementType().toString());
-                    ps1.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
-                    ps1.setInt(6, movement.getQuantity());
-                    ps1.setInt(7, idBranchproduct);
-                    ps1.executeUpdate();
-                }
-            } catch (SQLException transactionError) {
-                throw new RuntimeException(transactionError);
+                ps1.setString(1, movement.getUuid().toString());
+                ps1.setString(2, movement.getOriginType().toString());
+                ps1.setString(3, movement.getOriginNumber());
+                ps1.setString(4, movement.getMovementType().toString());
+                ps1.setTimestamp(5, Timestamp.valueOf(movement.getDate()));
+                ps1.setInt(6, movement.getQuantity());
+                ps1.setInt(7, idBranchproduct);
+                ps1.executeUpdate();
             }
+        } catch (SQLException transactionError) {
+            throw new RuntimeException(transactionError);
+        }
     }
 
 
