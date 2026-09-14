@@ -59,17 +59,16 @@ public class Main {
 
         RequestService requestService = new RequestService(branchProductRepository);
 
-        Request request = new Request("00000000", branch);
+        Request request = new Request("118", branch);
+
         request.addProductRequest(product1, 120);
         System.out.println("Antes: " +
                 request.getProductRequestMap().get("001").isProcessed());
-        try {
-            requestService.attendedProduct(request, "001", 70);
-        } catch (InsufficientStockException e) {
-            System.out.println("Exceção esperada: " + e.getMessage());
-        }
+        requestService.attendedProduct(request, "001", 30);
+        requestService.reversalProduct(request, "001");
+        requestService.reversalProduct(request, "001");
 
-        System.out.println(request.getProductRequestMap().get("001").isProcessed());
+
 
         // BranchProduct branchProduct = branchProductRepository.findBranchProduct(34, 3);
         //  System.out.println(branchProduct);

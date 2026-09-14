@@ -52,14 +52,16 @@ public class ProductRequest {
         this.requestedQuantity += requestedQuantity;
     }
 
-    public void reversal() {
+    public void validateCanBeReverted() {
         if (reversed) {
             throw new ProductRequestAlreadyRevertedException();
         }
-        if (!reversed && attendedQuantity == 0) {
+        if (attendedQuantity == 0) {
             throw new NoReversionException();
         }
-        this.getBranchProduct().processReversal(this.attendedQuantity, OriginType.REQUEST, request.getNumberRequest());
+    }
+
+    public void completeReversal(){
         this.reversed = true;
     }
 

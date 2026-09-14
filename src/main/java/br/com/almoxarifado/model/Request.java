@@ -48,14 +48,7 @@ public class Request {
         throw new ProductNotFoundInRequestException();
     }
 
-    public void reversalProduct(String code) {
-        ProductRequest findProductRequest = findProductRequest(code);
-        if (findProductRequest != null) {
-            findProductRequest.reversal();
-            return;
-        }
-        throw new ProductNotFoundInRequestException();
-    }
+
 
     public ProductRequest findProductRequest(String code) {return productRequestMap.get(code);}
 
