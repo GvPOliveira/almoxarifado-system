@@ -22,6 +22,31 @@ public class Request {
         productRequestView = Collections.unmodifiableMap(productRequestMap);
     }
 
+    private Request(String numberRequest, Branch branch, Map<String, ProductRequest> productRequestMap) {
+        this.numberRequest = numberRequest;
+        this.branch = branch;
+        this.productRequestMap = productRequestMap;
+        productRequestView = Collections.unmodifiableMap(productRequestMap);
+    }
+
+    public static Request requestReconstructor(String numberRequest, Branch branch, Map<String, ProductRequest> productRequestMap) {
+        return new Request(numberRequest, branch, productRequestMap);
+    }
+
+    @Override
+    public String toString() {
+        String out = "";
+        for (ProductRequest productRequest : productRequestView.values()) {
+            out += "Product" + productRequest.getBranchProduct().getProduct().getCode() +
+                    "\nname: " + productRequest.getBranchProduct().getProduct().getDescription();
+        }
+        return "Request{" +
+                "numberRequest='" + numberRequest + '\'' +
+                ", branch=" + branch +
+                ", productRequestView=\n" + out + "\n" +
+                '}';
+    }
+
     public void addProductRequest(Product product, int requestedQuantity) {
         BranchProduct branchProduct = branch.findBranchProduct(product.getCode());
         if (requestedQuantity <= 0) {
@@ -36,21 +61,13 @@ public class Request {
             return;
         }
         ProductRequest newProductRequest = new ProductRequest(this, branchProduct, requestedQuantity);
-        productRequestMap.put(product.getCode(),newProductRequest);
-    }
-
-    public void attendedProduct(String code, int attendedQuantity) {
-        ProductRequest findProductRequest = findProductRequest(code);
-        if (findProductRequest != null) {
-            findProductRequest.validateCanBeProcessed(attendedQuantity);
-            return;
-        }
-        throw new ProductNotFoundInRequestException();
+        productRequestMap.put(product.getCode(), newProductRequest);
     }
 
 
-
-    public ProductRequest findProductRequest(String code) {return productRequestMap.get(code);}
+    public ProductRequest findProductRequest(String code) {
+        return productRequestMap.get(code);
+    }
 
 
     public String getNumberRequest() {

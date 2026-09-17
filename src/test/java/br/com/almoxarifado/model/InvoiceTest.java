@@ -1,11 +1,7 @@
-/*package br.com.almoxarifado.model;
+package br.com.almoxarifado.model;
 
-import br.com.almoxarifado.exception.CannotProcessInvoiceWithoutProductsException;
 import br.com.almoxarifado.exception.InvalidQuantityException;
 import br.com.almoxarifado.exception.InvoiceAlreadyProcessedException;
-import br.com.almoxarifado.jdbc.BranchProductRepository;
-import br.com.almoxarifado.model.*;
-import br.com.almoxarifado.service.InvoiceService;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,30 +50,30 @@ public class InvoiceTest {
         assertEquals(0, invoice.getProductInvoiceView().size());
     }
 
-    @Test
-    void cannotProcessInvoiceWithoutProducts() {
-        BranchProductRepository branchProductRepository = new BranchProductRepository();
-        InvoiceService invoiceService = new InvoiceService(branchProductRepository);
-        Branch branchSouth = new Branch("001", "Branch South");
-        Invoice invoice = new Invoice("123", branchSouth);
-        assertThrows(CannotProcessInvoiceWithoutProductsException.class, () ->
-                invoiceService.processInvoice(invoice));
-        assertFalse(invoice.isProcessed());
-    }
-
+    /* test invoice service
+        @Test
+        void cannotProcessInvoiceWithoutProducts() {
+            BranchProductRepository branchProductRepository = new BranchProductRepository();
+            InvoiceService invoiceService = new InvoiceService(branchProductRepository);
+            Branch branchSouth = new Branch("001", "Branch South");
+            Invoice invoice = new Invoice("123", branchSouth);
+e            assertThrows(CannotProcessInvoiceWithoutProductsException.class, () ->
+                    invoiceService.processInvoice(invoice));
+            assertFalse(invoice.isProcessed());
+        }
+    */
     @Test
     void cannotAddProductInvoiceWithInvoiceProcessed() {
         Product newProduct = new Product("1", "Parafuso 1/2 x 1");
         Branch branchSouth = new Branch("001", "Branch South");
         Invoice invoice = new Invoice("123", branchSouth);
         invoice.addProductInvoice(newProduct, 100, Destination.STOCK);
-        invoice.processInvoice();
+        invoice.completeProcessing();
         assertEquals(1, invoice.getProductInvoiceView().size());
         assertThrows(InvoiceAlreadyProcessedException.class, () ->
-                invoice.addProductInvoice(newProduct,100,Destination.STOCK));
+                invoice.addProductInvoice(newProduct, 100, Destination.STOCK));
         assertEquals(1, invoice.getProductInvoiceView().size());
     }
 
 
 }
-*/

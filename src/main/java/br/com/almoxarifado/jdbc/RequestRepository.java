@@ -1,0 +1,130 @@
+package br.com.almoxarifado.jdbc;
+
+import br.com.almoxarifado.exception.BranchProductNotFoundException;
+import br.com.almoxarifado.exception.RequestNotFoundInBranch;
+import br.com.almoxarifado.model.*;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class RequestRepository {
+
+
+    public Request findRequestBy(String number_request, int id_branch, Connection connection) {
+        String sql = """
+                   SELECT
+                            p.id_product,
+                            p.code as product_code,
+                            p.name as product_name,
+                            b.id_branch,
+                            b.code as branch_code,
+                            b.name as branch_name,
+                            r.number_request,
+                            pr.id_product_request,
+                            pr.attended_quantity,
+                            pr.requested_quantity,
+                            pr.processed,
+                            pr.reversed,
+                            bp.id_branchProduct,
+                            bp.quantity,
+                            bp.location
+                            FROM request r
+                            INNER JOIN branch b
+                            ON r.branch_id = b.id_branch
+                            INNER JOIN product_request pr
+                            ON r.id_request = pr.request_id
+                            INNER JOIN branch_product bp
+                            ON pr.branch_product_id = bp.id_branchProduct
+                            INNER JOIN product p
+                            ON bp.product_id = p.id_product
+                            WHERE r.number_request = ?
+                            AND r.branch_id = ?;
+                """;
+        try (connection;
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setString(1, number_request);
+            preparedStatement.setInt(2, id_branch);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new RequestNotFoundInBranch();
+                }
+
+                Product product = productReconstructor(resultSet);
+                Branch branch = branchReconstructor(resultSet);
+
+                int bpId = resultSet.getInt("id_branchProduct");
+                int bpQuantity = resultSet.getInt("quantity");
+                String bpLocation = resultSet.getString("location");
+
+                BranchProduct branchProduct = BranchProduct.reconstructor(bpId, product, branch,
+                        bpQuantity, bpLocation);
+
+                Map<String, ProductRequest> productRequestMap = new HashMap<>();
+
+                int id_productRequest = resultSet.getInt("id_product_request");
+                int attendedQuantity = resultSet.getInt("attended_quantity");
+                int requestedQuantity = resultSet.getInt("requested_quantity");
+                boolean processed = resultSet.getBoolean("processed");
+                boolean reversed = resultSet.getBoolean("reversed");
+
+                ProductRequest productRequest = ProductRequest.productRequestReconstructor(branchProduct,
+                        requestedQuantity, attendedQuantity, reversed, processed, id_productRequest);
+                productRequestMap.put(productRequest.getBranchProduct().getProduct().getCode(),
+                        productRequest);
+                while (resultSet.next()) {
+
+                    product = productReconstructor(resultSet);
+
+                    bpId = resultSet.getInt("id_branchProduct");
+                    bpQuantity = resultSet.getInt("quantity");
+                    bpLocation = resultSet.getString("location");
+
+
+                    branchProduct = BranchProduct.reconstructor(bpId, product, branch,
+                            bpQuantity, bpLocation);
+
+                    id_productRequest = resultSet.getInt("id_product_request");
+                    attendedQuantity = resultSet.getInt("attended_quantity");
+                    requestedQuantity = resultSet.getInt("requested_quantity");
+                    processed = resultSet.getBoolean("processed");
+                    reversed = resultSet.getBoolean("reversed");
+                    productRequest = ProductRequest.productRequestReconstructor(branchProduct,
+                            requestedQuantity, attendedQuantity, reversed, processed, id_productRequest);
+                    productRequestMap.put(productRequest.getBranchProduct().getProduct().getCode(),
+                            productRequest);
+                }
+                Request request = Request.requestReconstructor(number_request, branch, productRequestMap);
+                return request;
+
+            }
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
+    }
+
+
+    private Product productReconstructor(ResultSet resultSet) throws SQLException {
+        int idProduct = resultSet.getInt("id_product");
+        String codeProduct = resultSet.getString("product_code");
+        String nameProduct = resultSet.getString("product_name");
+        Product product = new Product(codeProduct, nameProduct);
+        product.assignId(idProduct);
+        return product;
+    }
+
+    private Branch branchReconstructor(ResultSet resultSet) throws SQLException {
+        int idBranch = resultSet.getInt("id_branch");
+        String codeBranch = resultSet.getString("branch_code");
+        String nameBranch = resultSet.getString("branch_name");
+        Branch branch = new Branch(codeBranch, nameBranch);
+        branch.assignId(idBranch);
+        return branch;
+    }
+
+
+}

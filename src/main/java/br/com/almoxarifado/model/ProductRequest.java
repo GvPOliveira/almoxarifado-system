@@ -4,6 +4,7 @@ import br.com.almoxarifado.exception.*;
 import br.com.almoxarifado.exception.*;
 
 public class ProductRequest {
+    private int idProductRequest;
     private Request request;
     private BranchProduct branchProduct;
     private int requestedQuantity;
@@ -21,6 +22,21 @@ public class ProductRequest {
         attendedQuantity = 0;
         reversed = false;
         processed = false;
+    }
+
+    private ProductRequest(BranchProduct branchProduct, int requestedQuantity, int attendedQuantity,
+                           boolean reversed, boolean processed, int idProductRequest) {
+        this.idProductRequest = idProductRequest;
+        this.branchProduct = branchProduct;
+        this.requestedQuantity = requestedQuantity;
+        this.attendedQuantity = attendedQuantity;
+        this.reversed = reversed;
+        this.processed = processed;
+    }
+
+    public static ProductRequest productRequestReconstructor(BranchProduct branchProduct, int requestedQuantity, int attendedQuantity,
+                                                             boolean reversed, boolean processed, int idProductRequest) {
+        return new ProductRequest(branchProduct, requestedQuantity, attendedQuantity, reversed, processed, idProductRequest);
     }
 
 
@@ -61,7 +77,7 @@ public class ProductRequest {
         }
     }
 
-    public void completeReversal(){
+    public void completeReversal() {
         this.reversed = true;
     }
 
