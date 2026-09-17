@@ -4,14 +4,51 @@ import br.com.almoxarifado.exception.BranchProductNotFoundException;
 import br.com.almoxarifado.exception.RequestNotFoundInBranch;
 import br.com.almoxarifado.model.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RequestRepository {
+
+
+    public void save(Request request, Connection connection) {
+        String sqlRequest = """
+                INSERT INTO request(number_request, branch_id)
+                VALUES(?, ?);
+                """;
+        String sqlProductRequest = """
+                INSERT INTO product_request (request_id, branch_product_id, requested_quantity, attended_quantity)
+                Value(?, ?, ?, ?);
+                """;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlRequest, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement preparedStatement2 = connection.prepareStatement(sqlProductRequest)) {
+            preparedStatement.setString(1, request.getNumberRequest());
+            preparedStatement.setInt(2, request.getBranch().getId());
+            preparedStatement.executeUpdate();
+            try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                if (!resultSet.next()) {
+                    throw new SQLException("Não foi possivel recuperar o ID da request.");
+                }
+                int idRequest = resultSet.getInt(1);
+
+                for (ProductRequest productRequest : request.getProductRequestMap().values()) {
+                    int idBranchProduct, requestedQuantity, attendedQuantity;
+                    idBranchProduct = productRequest.getBranchProduct().getId();
+                    requestedQuantity = productRequest.getRequestedQuantity();
+                    attendedQuantity = productRequest.getAttendedQuantity();
+
+                    preparedStatement2.setInt(1, idRequest);
+                    preparedStatement2.setInt(2, idBranchProduct);
+                    preparedStatement2.setInt(3, requestedQuantity);
+                    preparedStatement2.setInt(4, attendedQuantity);
+                    preparedStatement2.executeUpdate();
+                }
+            }
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
+    }
 
 
     public Request findRequestBy(String number_request, int id_branch, Connection connection) {

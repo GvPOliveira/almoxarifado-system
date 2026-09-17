@@ -76,12 +76,41 @@ public class Main {
 //        // BranchProduct branchProduct = branchProductRepository.findBranchProduct(34, 3);
 //        //  System.out.println(branchProduct);
 
+        Branch branch = new Branch("01", "Filial Sul");
+        branch.assignId(1);
+        Product product1 = new Product("001", "Caneta Azul");
+        product1.assignId(17);
+        Product product2 = new Product("002", "Parafuso 1/2");
+        product2.assignId(18);
+        Product product3 = new Product("005", "Parafuso 3/4 x 2");
+        product3.assignId(21);
+
+        BranchProduct newBranchproduct = new BranchProduct(product1, branch, 100,
+                OriginType.INVOICE, "006");
+        newBranchproduct.assignId(1);
+
+        BranchProduct newBranchproduct1 = new BranchProduct(product2, branch, 100,
+                OriginType.INVOICE, "006");
+        newBranchproduct1.assignId(2);
+
+
+        BranchProduct newBranchproduct2 = new BranchProduct(product3, branch, 100,
+                OriginType.INVOICE, "006");
+
+        Request request = new Request("0000", branch);
+
+        ProductRequest productRequest1 = new ProductRequest(request, newBranchproduct, 40);
+        request.addProductRequestList(productRequest1);
+        ProductRequest productRequest2 = new ProductRequest(request, newBranchproduct1, 40);
+        request.addProductRequestList(productRequest2);
+        ProductRequest productRequest3 = new ProductRequest(request, newBranchproduct2, 40);
+        request.addProductRequestList(productRequest3);
 
         RequestRepository requestRepository = new RequestRepository();
 
         DatabaseConnection databaseConnection = new DatabaseConnection();
         try (Connection connection = databaseConnection.connect()) {
-           Request request = requestRepository.findRequestBy("700", 1, connection);
+            requestRepository.save(request,connection);
             System.out.println(request);
         } catch (SQLException errorConnection) {
             throw new RuntimeException(errorConnection);

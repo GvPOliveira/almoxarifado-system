@@ -47,6 +47,10 @@ public class Request {
                 '}';
     }
 
+    public void addProductRequestList(ProductRequest productRequest) {
+        productRequestMap.put(productRequest.getBranchProduct().getProduct().getCode(), productRequest);
+    }
+
     public void addProductRequest(Product product, int requestedQuantity) {
         BranchProduct branchProduct = branch.findBranchProduct(product.getCode());
         if (requestedQuantity <= 0) {
