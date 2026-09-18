@@ -16,7 +16,7 @@ import java.util.UUID;
 public class Main {
 
     public static void main(String[] args) {
-//        BranchProductRepository branchProductRepository = new BranchProductRepository();
+        BranchProductRepository branchProductRepository = new BranchProductRepository();
 //       /* BranchProduct branchProduct = branchProductRepository.findBranchProduct(2);
 //        System.out.println(branchProduct);
 //        System.out.println("\n\n");
@@ -97,7 +97,7 @@ public class Main {
         BranchProduct newBranchproduct2 = new BranchProduct(product3, branch, 100,
                 OriginType.INVOICE, "006");
 
-        Request request = new Request("0000", branch);
+        Request request = new Request("0033", branch);
 
         ProductRequest productRequest1 = new ProductRequest(request, newBranchproduct, 40);
         request.addProductRequestList(productRequest1);
@@ -107,15 +107,9 @@ public class Main {
         request.addProductRequestList(productRequest3);
 
         RequestRepository requestRepository = new RequestRepository();
+        RequestService requestService = new RequestService(branchProductRepository, requestRepository);
 
-        DatabaseConnection databaseConnection = new DatabaseConnection();
-        try (Connection connection = databaseConnection.connect()) {
-            requestRepository.save(request,connection);
-            System.out.println(request);
-        } catch (SQLException errorConnection) {
-            throw new RuntimeException(errorConnection);
-        }
-
+        requestService.save(request);
 
     }
 

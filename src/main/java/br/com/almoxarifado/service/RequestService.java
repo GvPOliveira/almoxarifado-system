@@ -3,7 +3,9 @@ package br.com.almoxarifado.service;
 import br.com.almoxarifado.exception.ProductNotFoundInRequestException;
 import br.com.almoxarifado.jdbc.BranchProductRepository;
 import br.com.almoxarifado.jdbc.DatabaseConnection;
+import br.com.almoxarifado.jdbc.RequestRepository;
 import br.com.almoxarifado.model.*;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -11,9 +13,11 @@ public class RequestService {
 
 
     private BranchProductRepository branchProductRepository;
+    private RequestRepository requestRepository;
 
-    public RequestService(BranchProductRepository branchProductRepository) {
+    public RequestService(BranchProductRepository branchProductRepository, RequestRepository requestRepository) {
         this.branchProductRepository = branchProductRepository;
+        this.requestRepository = requestRepository;
     }
 
     public void attendedProduct(Request request, String code, int quantityAttended) {
@@ -38,6 +42,27 @@ public class RequestService {
                     c.rollback();
                 } catch (SQLException errorRollback) {
                     throw new RuntimeException(errorRollback);
+                }
+                throw errorTransaction;
+            }
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
+    }
+
+
+    public void save(Request request) {
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection connection = databaseConnection.connect()) {
+            connection.setAutoCommit(false);
+            try {
+                requestRepository.save(request, connection);
+                connection.commit();
+            } catch (RuntimeException errorTransaction) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackError) {
+                    throw new RuntimeException(rollbackError);
                 }
                 throw errorTransaction;
             }
