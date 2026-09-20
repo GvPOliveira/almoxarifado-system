@@ -1,6 +1,6 @@
 package br.com.almoxarifado.jdbc;
 
-import br.com.almoxarifado.exception.BranchProductNotFoundException;
+import br.com.almoxarifado.exception.ProductNotFoundInRequestException;
 import br.com.almoxarifado.exception.RequestNotFoundInBranch;
 import br.com.almoxarifado.model.*;
 
@@ -43,6 +43,28 @@ public class RequestRepository {
                     preparedStatement2.setInt(3, requestedQuantity);
                     preparedStatement2.setInt(4, attendedQuantity);
                     preparedStatement2.executeUpdate();
+                }
+            }
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
+    }
+
+
+    public void updateAttendance(int idProductRequest, int attendedQuantity, Connection connection) {
+        String sql = """
+                UPDATE product_request
+                SET attended_quantity = ?,
+                    processed = true
+                WHERE id_product_request = ?;
+                """;
+        try {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, attendedQuantity);
+                preparedStatement.setInt(2, idProductRequest);
+                int rowsAffeted = preparedStatement.executeUpdate();
+                if (rowsAffeted == 0) {
+                    throw new ProductNotFoundInRequestException();
                 }
             }
         } catch (SQLException errorConnection) {

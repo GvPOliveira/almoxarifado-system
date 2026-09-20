@@ -4,6 +4,7 @@ import br.com.almoxarifado.exception.*;
 import br.com.almoxarifado.exception.*;
 
 public class ProductRequest {
+    private int id;
     private int idProductRequest;
     private Request request;
     private BranchProduct branchProduct;
@@ -11,11 +12,15 @@ public class ProductRequest {
     private int attendedQuantity;
     private boolean reversed, processed;
 
+    public int getIdProductRequest() {
+        return idProductRequest;
+    }
 
     public ProductRequest(Request request, BranchProduct branchProduct, int requestedQuantity) {
         if (requestedQuantity <= 0) {
             throw new InvalidQuantityException();
         }
+        this.idProductRequest = 0;
         this.request = request;
         this.branchProduct = branchProduct;
         this.requestedQuantity = requestedQuantity;
@@ -40,6 +45,7 @@ public class ProductRequest {
     }
 
 
+
     public void validateCanBeProcessed(int attendedQuantity) {
         if (processed) {
             throw new ProductRequestAlreadyProcessedException();
@@ -55,6 +61,10 @@ public class ProductRequest {
     public void completeProcessing(int quantity) {
         this.attendedQuantity = quantity;
         processed = true;
+    }
+
+    public void defineAttendedQuantity(int attendedQuantity) {
+        this.attendedQuantity = attendedQuantity;
     }
 
 

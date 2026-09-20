@@ -50,6 +50,37 @@ public class RequestService {
         }
     }
 
+    public void attendRequest(Request request) {
+        for (ProductRequest productRequest : request.getProductRequestMap().values()) {
+            productRequest.validateCanBeProcessed(productRequest.getAttendedQuantity());
+        }
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection connection = databaseConnection.connect()) {
+            connection.setAutoCommit(false);
+            try {
+                for (ProductRequest p : request.getProductRequestMap().values()) {
+                    int attendedQuantity = p.getAttendedQuantity();
+                    Movement movement = new Movement(attendedQuantity, MovementType.OUTPUT, OriginType.REQUEST, request.getNumberRequest());
+                    branchProductRepository.removeQuantity(p.getBranchProduct(), movement, connection);
+                    requestRepository.updateAttendance(p.getIdProductRequest(), attendedQuantity, connection);
+                }
+
+                connection.commit();
+            } catch (RuntimeException errorTransaction) {
+                try {
+                    connection.rollback();
+                } catch (SQLException errorRolback) {
+                    throw new RuntimeException(errorRolback);
+                }
+                throw errorTransaction;
+            }
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
+
+
+    }
+
 
     public void save(Request request) {
         DatabaseConnection databaseConnection = new DatabaseConnection();

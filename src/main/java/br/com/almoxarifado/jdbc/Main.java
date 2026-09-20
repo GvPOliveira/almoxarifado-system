@@ -96,20 +96,27 @@ public class Main {
 
         BranchProduct newBranchproduct2 = new BranchProduct(product3, branch, 100,
                 OriginType.INVOICE, "006");
+        newBranchproduct2.assignId(3);
 
-        Request request = new Request("0033", branch);
+        Request request = new Request("0000", branch);
 
-        ProductRequest productRequest1 = new ProductRequest(request, newBranchproduct, 40);
+        ProductRequest productRequest1 = ProductRequest.productRequestReconstructor(newBranchproduct,
+                80,15,false,false,9);
         request.addProductRequestList(productRequest1);
-        ProductRequest productRequest2 = new ProductRequest(request, newBranchproduct1, 40);
+
+        ProductRequest productRequest2 = ProductRequest.productRequestReconstructor(newBranchproduct1,50,
+                0,false,false,10);
         request.addProductRequestList(productRequest2);
-        ProductRequest productRequest3 = new ProductRequest(request, newBranchproduct2, 40);
-        request.addProductRequestList(productRequest3);
+
+//        ProductRequest productRequest3 = ProductRequest.productRequestReconstructor(newBranchproduct2,40,
+//                40,false,true,8);
+//        request.addProductRequestList(productRequest3);
+//        productRequest3.defineAttendedQuantity(40);
 
         RequestRepository requestRepository = new RequestRepository();
         RequestService requestService = new RequestService(branchProductRepository, requestRepository);
 
-        requestService.save(request);
+        requestService.attendRequest(request);
 
     }
 
