@@ -79,6 +79,9 @@ public class ProductRequest {
     }
 
     public void validateCanBeReverted() {
+        if(!processed){
+            throw new ProductRequestNotProcessedException();
+        }
         if (reversed) {
             throw new ProductRequestAlreadyRevertedException();
         }

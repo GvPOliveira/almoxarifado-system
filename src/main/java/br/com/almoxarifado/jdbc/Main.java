@@ -101,7 +101,7 @@ public class Main {
         Request request = new Request("0000", branch);
 
         ProductRequest productRequest1 = ProductRequest.productRequestReconstructor(newBranchproduct,
-                80,15,false,false,9);
+                80,15,false,true,0);
         request.addProductRequestList(productRequest1);
 
         ProductRequest productRequest2 = ProductRequest.productRequestReconstructor(newBranchproduct1,50,
@@ -116,7 +116,9 @@ public class Main {
         RequestRepository requestRepository = new RequestRepository();
         RequestService requestService = new RequestService(branchProductRepository, requestRepository);
 
-        requestService.attendRequest(request);
+        requestService.reversal(request,"001");
+
+//        requestService.attendRequest(request);
 
     }
 

@@ -1,6 +1,7 @@
 package br.com.almoxarifado.service;
 
 import br.com.almoxarifado.exception.ProductNotFoundInRequestException;
+import br.com.almoxarifado.exception.ProductReversalProcessedException;
 import br.com.almoxarifado.jdbc.BranchProductRepository;
 import br.com.almoxarifado.jdbc.DatabaseConnection;
 import br.com.almoxarifado.jdbc.RequestRepository;
@@ -79,6 +80,34 @@ public class RequestService {
         }
 
 
+    }
+
+    public void reversal(Request request, String codeProduct) {
+        ProductRequest productRequest = request.findProductRequest(codeProduct);
+        if (productRequest == null) {
+            throw new ProductNotFoundInRequestException();
+        }
+        productRequest.validateCanBeReverted();
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection connection = databaseConnection.connect()) {
+            try {
+                connection.setAutoCommit(false);
+                Movement movement = new Movement(productRequest.getAttendedQuantity(), MovementType.REVERSAL,
+                        OriginType.REQUEST, request.getNumberRequest());
+                branchProductRepository.addQuantity(productRequest.getBranchProduct(), movement, connection);
+                requestRepository.updateReversed(productRequest.getIdProductRequest(), connection);
+                connection.commit();
+            } catch (RuntimeException errorTransaction) {
+                try {
+                    connection.rollback();
+                } catch (SQLException errorRollback) {
+                    throw new RuntimeException(errorRollback);
+                }
+                throw errorTransaction;
+            }
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
     }
 
 
