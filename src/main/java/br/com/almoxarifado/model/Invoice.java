@@ -9,9 +9,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Invoice {
+    private int id;
     private String numberInvoice;
     private LocalDateTime date;
     private boolean processed;
+    private boolean reversed;
     private Branch branchDestination;
     private List<ProductInvoice> productInvoiceList;
     private List<ProductInvoice> productInvoiceView;
@@ -31,18 +33,48 @@ public class Invoice {
         productInvoiceList = new ArrayList<>();
         productInvoiceView = Collections.unmodifiableList(productInvoiceList);
         processed = false;
+        reversed = false;
+    }
+
+    private Invoice(int id, String numberInvoice, Branch branchDestination, LocalDateTime date, List<ProductInvoice> productInvoices,
+                   boolean processed, boolean reversed) {
+        this.id = id;
+        this.numberInvoice = numberInvoice;
+        this.branchDestination = branchDestination;
+        this.date = date;
+        productInvoiceList = productInvoices;
+        productInvoiceView = Collections.unmodifiableList(productInvoiceList);
+        this.processed = processed;
+        this.reversed = reversed;
+    }
+
+    public static Invoice reconstructorInvoice(int id, String numberInvoice, Branch branchDestination, LocalDateTime date, List<ProductInvoice> productInvoices,
+                                               boolean processed, boolean reversed) {
+        return new Invoice(id,numberInvoice, branchDestination, date, productInvoices, processed, reversed);
     }
 
     public void addProductInvoice(Product product, int quantity, Destination destination) {
-        if(processed){
+        if (processed) {
             throw new InvoiceAlreadyProcessedException();
         }
         ProductInvoice newProductInvoice = new ProductInvoice(product, quantity, destination);
         productInvoiceList.add(newProductInvoice);
     }
 
+    @Override
+    public String toString() {
+        return "Invoice{" +
+                "id=" + id +
+                ", numberInvoice='" + numberInvoice + '\'' +
+                ", date=" + date +
+                ", processed=" + processed +
+                ", reversed=" + reversed +
+                ", branchDestination=" + branchDestination +
+                '}';
+    }
+
     public void validateCanBeProcessed() {
-        if(this.productInvoiceList.isEmpty()){
+        if (this.productInvoiceList.isEmpty()) {
             throw new CannotProcessInvoiceWithoutProductsException();
         }
         if (this.processed) {
@@ -50,14 +82,13 @@ public class Invoice {
         }
     }
 
-    private void markAsProcessed(){
+    private void markAsProcessed() {
         processed = true;
     }
 
-    public void completeProcessing(){
+    public void completeProcessing() {
         markAsProcessed();
     }
-
 
 
     public String getNumberInvoice() {
@@ -71,5 +102,9 @@ public class Invoice {
 
     public List<ProductInvoice> getProductInvoiceView() {
         return productInvoiceView;
+    }
+
+    public boolean isReversed() {
+        return reversed;
     }
 }

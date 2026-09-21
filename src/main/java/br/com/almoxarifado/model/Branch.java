@@ -105,6 +105,15 @@ public class Branch {
     }
 */
 
+    @Override
+    public String toString() {
+        return "\nBranch{" +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", id=" + id +
+                '}';
+    }
+
     public BranchProduct findBranchProduct(String code) {
         return products.get(code);
     }

@@ -2,6 +2,7 @@ package br.com.almoxarifado.service;
 
 import br.com.almoxarifado.jdbc.BranchProductRepository;
 import br.com.almoxarifado.jdbc.DatabaseConnection;
+import br.com.almoxarifado.jdbc.InvoiceRepository;
 import br.com.almoxarifado.model.*;
 
 import java.sql.Connection;
@@ -10,10 +11,20 @@ import java.sql.SQLException;
 public class InvoiceService {
 
     private BranchProductRepository branchProductRepository;
+    private InvoiceRepository invoiceRepository;
 
-
-    public InvoiceService(BranchProductRepository branchProductRepository) {
+    public InvoiceService(BranchProductRepository branchProductRepository, InvoiceRepository invoiceRepository) {
         this.branchProductRepository = branchProductRepository;
+        this.invoiceRepository = invoiceRepository;
+    }
+
+    public Invoice findByNumberInvoice(String numberInvoice) {
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection connection = databaseConnection.connect()) {
+            return invoiceRepository.findByNumber(numberInvoice, connection);
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
     }
 
 
@@ -23,12 +34,11 @@ public class InvoiceService {
         try (Connection connection = databaseConnection.connect()) {
             connection.setAutoCommit(false);
             try {
-                for (int i = 0; i < invoice.getProductInvoiceView().size(); i++) {
-                    int idProduct = invoice.getProductInvoiceView().get(i).getProduct().getId();
+                for (ProductInvoice productInvoice : invoice.getProductInvoiceView()) {
+                    int idProduct = productInvoice.getProduct().getId();
                     int idBranch = invoice.getBranchDestination().getId();
-                    int quantity = invoice.getProductInvoiceView().get(i).getQuantity();
+                    int quantity = productInvoice.getQuantity();
                     String numberInvoice = invoice.getNumberInvoice();
-                    ProductInvoice productInvoice = invoice.getProductInvoiceView().get(i);
 
                     Destination destination = productInvoice.getDestination();
                     if (destination == Destination.STOCK) {
@@ -45,17 +55,17 @@ public class InvoiceService {
                         }
                     }
                 }
+                invoice.completeProcessing();
+                invoiceRepository.save(invoice, connection);
+                connection.commit();
             } catch (RuntimeException transactionError) {
                 try {
                     connection.rollback();
                 } catch (SQLException errorRollback) {
                     throw new RuntimeException(errorRollback);
                 }
-                throw new RuntimeException(transactionError);
+                throw transactionError;
             }
-            connection.commit();
-            invoice.completeProcessing();
-
         } catch (SQLException errorConnection) {
             throw new RuntimeException(errorConnection);
         }
