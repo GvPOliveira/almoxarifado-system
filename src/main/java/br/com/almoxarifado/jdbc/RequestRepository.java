@@ -19,7 +19,7 @@ public class RequestRepository {
                 """;
         String sqlProductRequest = """
                 INSERT INTO product_request (request_id, branch_product_id, requested_quantity, attended_quantity)
-                Value(?, ?, ?, ?);
+                VALUES(?, ?, ?, ?);
                 """;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlRequest, Statement.RETURN_GENERATED_KEYS);
@@ -63,8 +63,8 @@ public class RequestRepository {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setInt(1, attendedQuantity);
                 preparedStatement.setInt(2, idProductRequest);
-                int rowsAffeted = preparedStatement.executeUpdate();
-                if (rowsAffeted == 0) {
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected == 0) {
                     throw new ProductNotFoundInRequestException();
                 }
             }
@@ -79,21 +79,19 @@ public class RequestRepository {
                 SET reversed = true
                 WHERE id_product_request = ?;
                 """;
-        try {
-            try(PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-            preparedStatement.setInt(1,idProductRequest);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idProductRequest);
             int rowsAffected = preparedStatement.executeUpdate();
-            if(rowsAffected == 0){
+            if (rowsAffected == 0) {
                 throw new ProductRequestNotFoundException();
             }
-            }
-        }catch (SQLException errorTransaction){
+        } catch (SQLException errorTransaction) {
             throw new RuntimeException(errorTransaction);
         }
     }
 
 
-    public Request findRequestBy(String number_request, int id_branch, Connection connection) {
+    public Request findRequestBy(String numberRequest, int idBranch, Connection connection) {
         String sql = """
                    SELECT
                             p.id_product,
@@ -123,11 +121,10 @@ public class RequestRepository {
                             WHERE r.number_request = ?
                             AND r.branch_id = ?;
                 """;
-        try (connection;
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setString(1, number_request);
-            preparedStatement.setInt(2, id_branch);
+            preparedStatement.setString(1, numberRequest);
+            preparedStatement.setInt(2, idBranch);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (!resultSet.next()) {
                     throw new RequestNotFoundInBranch();
@@ -145,14 +142,14 @@ public class RequestRepository {
 
                 Map<String, ProductRequest> productRequestMap = new HashMap<>();
 
-                int id_productRequest = resultSet.getInt("id_product_request");
+                int idProductRequest = resultSet.getInt("id_product_request");
                 int attendedQuantity = resultSet.getInt("attended_quantity");
                 int requestedQuantity = resultSet.getInt("requested_quantity");
                 boolean processed = resultSet.getBoolean("processed");
                 boolean reversed = resultSet.getBoolean("reversed");
 
                 ProductRequest productRequest = ProductRequest.productRequestReconstructor(branchProduct,
-                        requestedQuantity, attendedQuantity, reversed, processed, id_productRequest);
+                        requestedQuantity, attendedQuantity, reversed, processed, idProductRequest);
                 productRequestMap.put(productRequest.getBranchProduct().getProduct().getCode(),
                         productRequest);
                 while (resultSet.next()) {
@@ -167,17 +164,17 @@ public class RequestRepository {
                     branchProduct = BranchProduct.reconstructor(bpId, product, branch,
                             bpQuantity, bpLocation);
 
-                    id_productRequest = resultSet.getInt("id_product_request");
+                    idProductRequest = resultSet.getInt("id_product_request");
                     attendedQuantity = resultSet.getInt("attended_quantity");
                     requestedQuantity = resultSet.getInt("requested_quantity");
                     processed = resultSet.getBoolean("processed");
                     reversed = resultSet.getBoolean("reversed");
                     productRequest = ProductRequest.productRequestReconstructor(branchProduct,
-                            requestedQuantity, attendedQuantity, reversed, processed, id_productRequest);
+                            requestedQuantity, attendedQuantity, reversed, processed, idProductRequest);
                     productRequestMap.put(productRequest.getBranchProduct().getProduct().getCode(),
                             productRequest);
                 }
-                Request request = Request.requestReconstructor(number_request, branch, productRequestMap);
+                Request request = Request.requestReconstructor(numberRequest, branch, productRequestMap);
                 return request;
 
             }

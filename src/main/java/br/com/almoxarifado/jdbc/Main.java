@@ -21,7 +21,7 @@ public class Main {
         Branch branch = new Branch("01", "Filial Sul");
         branch.assignId(1);
         Product product1 = new Product("001", "Caneta Azul");
-        product1.assignId(17);
+//        product1.assignId(17);
         Product product2 = new Product("002", "Parafuso 1/2");
         product2.assignId(18);
         Product product3 = new Product("005", "Parafuso 3/4 x 2");
@@ -40,7 +40,7 @@ public class Main {
                 OriginType.INVOICE, "006");
         newBranchproduct2.assignId(3);
 
-        Invoice invoice = new Invoice("TESTE-INVOICE3",branch);
+        Invoice invoice = new Invoice("NewRequest",branch);
         invoice.addProductInvoice(product1,100,Destination.STOCK);
         invoice.addProductInvoice(product2,100,Destination.DIRECT);
         invoice.addProductInvoice(product3,100,Destination.DIRECT);
@@ -48,9 +48,9 @@ public class Main {
 
         InvoiceRepository invoiceRepository = new InvoiceRepository();
         InvoiceService invoiceService = new InvoiceService(branchProductRepository,invoiceRepository);
-        Invoice invoice1 = invoiceService.findByNumberInvoice("TESTE-INVOICE3");
+        Invoice invoice1 = invoiceService.findByIdInvoice(8);
         System.out.println(invoice1);
-        invoiceService.processInvoice(invoice1);
+        invoiceService.reverseInvoice(invoice1);
 
 
     }

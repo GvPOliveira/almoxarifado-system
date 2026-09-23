@@ -3,7 +3,6 @@ package br.com.almoxarifado.jdbc;
 import br.com.almoxarifado.exception.ProductNotFoundException;
 import br.com.almoxarifado.model.Product;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,63 +85,67 @@ public class ProductRepository {
     }
 
 
-    public int updateProductById(int id, String newName) {
+    public void updateProductById(int id, String newName) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         String sql = "UPDATE product SET name = ? WHERE id_product = ?";
-        try(Connection c = databaseConnection.connect();
-        PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-         preparedStatement.setString(1, newName);
-         preparedStatement.setInt(2, id);
-         int result = preparedStatement.executeUpdate();
-         return result;
-        }catch (SQLException sqlException){
+        try (Connection c = databaseConnection.connect();
+             PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+            preparedStatement.setString(1, newName);
+            preparedStatement.setInt(2, id);
+            int result = preparedStatement.executeUpdate();
+            if (result == 0) {
+                throw new ProductNotFoundException();
+            }
+        } catch (SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }
     }
 
-    public int updateProductByCode(String code, String newName) {
+    public void updateProductByCode(String code, String newName) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         String sql = "UPDATE product SET name = ? WHERE code = ?";
-        try(Connection c = databaseConnection.connect();
-            PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+        try (Connection c = databaseConnection.connect();
+             PreparedStatement preparedStatement = c.prepareStatement(sql)) {
             preparedStatement.setString(1, newName);
             preparedStatement.setString(2, code);
             int result = preparedStatement.executeUpdate();
-            return result;
-        }catch (SQLException sqlException){
+            if (result == 0) {
+                throw new ProductNotFoundException();
+            }
+        } catch (SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }
     }
 
 
-    public int deleteProductById(int id){
+    public void deleteProductById(int id) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         String sql = "DELETE FROM product WHERE id_product = ?";
-        try(Connection c = databaseConnection.connect();
-        PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-        preparedStatement.setInt(1, id);
-        int result = preparedStatement.executeUpdate();
-        return result;
-        }catch (SQLException sqlException){
+        try (Connection c = databaseConnection.connect();
+             PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+            preparedStatement.setInt(1, id);
+            int result = preparedStatement.executeUpdate();
+            if (result == 0) {
+                throw new ProductNotFoundException();
+            }
+        } catch (SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }
     }
 
 
-
-    public int deleteProductByCode(String code){
+    public int deleteProductByCode(String code) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         String sql = "DELETE FROM product WHERE code = ?";
-        try(Connection c = databaseConnection.connect();
-            PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+        try (Connection c = databaseConnection.connect();
+             PreparedStatement preparedStatement = c.prepareStatement(sql)) {
             preparedStatement.setString(1, code);
             int result = preparedStatement.executeUpdate();
             return result;
-        }catch (SQLException sqlException){
+        } catch (SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }
     }
-
 
 
     public Product mapProduct(ResultSet resultSet) throws SQLException {

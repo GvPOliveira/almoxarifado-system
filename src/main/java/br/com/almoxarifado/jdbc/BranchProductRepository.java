@@ -237,8 +237,8 @@ public class BranchProductRepository {
             ps.setInt(1, movement.getQuantity());
             ps.setInt(2, branchProduct.getId());
             ps.setInt(3, movement.getQuantity());
-            int updateRowsAffeted = ps.executeUpdate();
-            if (updateRowsAffeted == 0) {
+            int updateRowsAffected = ps.executeUpdate();
+            if (updateRowsAffected == 0) {
                 ps2.setInt(1, branchProduct.getId());
                 try (ResultSet rowsFound = ps2.executeQuery()) {
                     if (!rowsFound.next()) {

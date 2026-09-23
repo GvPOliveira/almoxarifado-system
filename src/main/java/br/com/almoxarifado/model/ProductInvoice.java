@@ -8,6 +8,10 @@ public class ProductInvoice {
     private Product product;
     private int quantity;
 
+    public int getId() {
+        return id;
+    }
+
     public ProductInvoice(Product product, int quantity, Destination destination) {
         if (quantity <= 0) {
             throw new InvalidQuantityException();

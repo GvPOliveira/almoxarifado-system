@@ -1,6 +1,6 @@
 package br.com.almoxarifado.jdbc;
 
-import br.com.almoxarifado.exception.InvoiceNotFoundException;
+import br.com.almoxarifado.exception.*;
 import br.com.almoxarifado.model.*;
 
 import java.sql.*;
@@ -10,7 +10,7 @@ import java.util.List;
 
 public class InvoiceRepository {
 
-    public Invoice findByNumber(String numberInvoice, Connection connection) {
+    public Invoice findById(int idInvoice, Connection connection) {
         String sql = """
                 SELECT id_invoice, i.number_invoice, i.date_invoice, i.processed, i.branch_id, i.reversed,
                 			b.code as branch_code, b.name as branch_name,
@@ -20,24 +20,24 @@ public class InvoiceRepository {
                 INNER JOIN branch b ON i.branch_id = b.id_branch
                 INNER JOIN product_invoice pi ON pi.invoice_id = i.id_invoice
                 INNER JOIN product p ON pi.product_id = p.id_product
-                WHERE i.number_invoice = ?;
+                WHERE i.id_invoice = ?;
                 """;
         try {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, numberInvoice);
+                preparedStatement.setInt(1, idInvoice);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 if (!resultSet.next()) {
                     throw new InvoiceNotFoundException();
                 }
 
-                int idInvoice, branchId, productInvoiceId, quantity, productId;
+                int invoiceId, branchId, productInvoiceId, quantity, productId;
                 LocalDateTime dateTime;
                 String invoiceNumber, branchName, branchCode, productCode, productName, destinationStr;
                 boolean processed, reversed;
                 Destination destination;
 
                 // INVOICE
-                idInvoice = resultSet.getInt("id_invoice");
+                invoiceId = resultSet.getInt("id_invoice");
                 invoiceNumber = resultSet.getString("number_invoice");
                 dateTime = resultSet.getObject("date_invoice", LocalDateTime.class);
                 processed = resultSet.getBoolean("processed");
@@ -79,7 +79,7 @@ public class InvoiceRepository {
                     productInvoice = ProductInvoice.reconstructorProductInvoice(productInvoiceId, product, quantity, destination);
                     productInvoiceList.add(productInvoice);
                 }
-                return Invoice.reconstructorInvoice(idInvoice, invoiceNumber, branch, dateTime,
+                return Invoice.reconstructorInvoice(invoiceId, invoiceNumber, branch, dateTime,
                         productInvoiceList, processed, reversed);
 
             }
@@ -88,6 +88,43 @@ public class InvoiceRepository {
         }
     }
 
+
+    public void updateInvoiceProcessed(int idInvoice, Connection connection){
+        String sql = """
+                UPDATE invoice
+                SET reversed = false,
+                processed = true
+                WHERE id_invoice =  ?
+                """;
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idInvoice);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if(rowsAffected == 0){
+                throw new InvoiceNotFoundException();
+            }
+        }catch (SQLException errorConnection){
+            throw new RuntimeException(errorConnection);
+        }
+    }
+
+
+    public void updateInvoiceReversed(int idInvoice, Connection connection) {
+        String sql = """
+                UPDATE invoice
+                SET reversed = true,
+                processed = false
+                WHERE id_invoice =  ?
+                """;
+            try(PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, idInvoice);
+                int rowsAffected = preparedStatement.executeUpdate();
+                if(rowsAffected == 0){
+                    throw new InvoiceNotFoundException();
+                }
+            }catch (SQLException errorConnection){
+                throw new RuntimeException(errorConnection);
+            }
+    }
 
     public void save(Invoice invoice, Connection connection) {
         String sqlInvoice = """

@@ -65,7 +65,7 @@ public class BranchRepository {
 
     public List<Branch> findByAll() {
         DatabaseConnection databaseConnection = new DatabaseConnection();
-        String sql = "SELECT * FROM branch";
+        String sql = "SELECT id_branch, code, name FROM branch";
         try (Connection c = databaseConnection.connect();
              PreparedStatement preparedStatement = c.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -81,7 +81,7 @@ public class BranchRepository {
     }
 
 
-    public int updateNameByCode(String code, String newName) {
+    public void updateNameByCode(String code, String newName) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         String sql = "UPDATE branch SET name = ? WHERE code = ?";
         try (Connection c = databaseConnection.connect();
@@ -89,7 +89,9 @@ public class BranchRepository {
             preparedStatement.setString(1, newName);
             preparedStatement.setString(2, code);
             int rowsAffected = preparedStatement.executeUpdate();
-            return rowsAffected;
+            if(rowsAffected == 0){
+                throw new BranchNotFoundException();
+            }
         } catch (SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }

@@ -2,6 +2,8 @@ package br.com.almoxarifado.model;
 
 import br.com.almoxarifado.exception.CannotProcessInvoiceWithoutProductsException;
 import br.com.almoxarifado.exception.InvoiceAlreadyProcessedException;
+import br.com.almoxarifado.exception.InvoiceAlreadyRevertedException;
+import br.com.almoxarifado.exception.UnprocessedInvoiceException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,6 +12,11 @@ import java.util.Collections;
 
 public class Invoice {
     private int id;
+
+    public int getId() {
+        return id;
+    }
+
     private String numberInvoice;
     private LocalDateTime date;
     private boolean processed;
@@ -82,8 +89,18 @@ public class Invoice {
         }
     }
 
+    public void validateCanBeReverted(){
+        if(this.reversed){
+            throw new InvoiceAlreadyRevertedException();
+        }
+        if(!this.processed){
+            throw new UnprocessedInvoiceException();
+        }
+    }
+
     private void markAsProcessed() {
         processed = true;
+        reversed = false;
     }
 
     public void completeProcessing() {

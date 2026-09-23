@@ -18,10 +18,40 @@ public class InvoiceService {
         this.invoiceRepository = invoiceRepository;
     }
 
-    public Invoice findByNumberInvoice(String numberInvoice) {
+    public Invoice findByIdInvoice(int idInvoice) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         try (Connection connection = databaseConnection.connect()) {
-            return invoiceRepository.findByNumber(numberInvoice, connection);
+            return invoiceRepository.findById(idInvoice, connection);
+        } catch (SQLException errorConnection) {
+            throw new RuntimeException(errorConnection);
+        }
+    }
+
+    public void reverseInvoice(Invoice invoice) {
+        invoice.validateCanBeReverted();
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        try (Connection connection = databaseConnection.connect()) {
+            try {
+                connection.setAutoCommit(false);
+                for (ProductInvoice productInvoice : invoice.getProductInvoiceView()) {
+                    if (productInvoice.getDestination() == Destination.STOCK) {
+                        BranchProduct branchProduct = branchProductRepository.findBranchProduct(
+                                productInvoice.getProduct().getId(), invoice.getBranchDestination().getId());
+                        Movement movement = new Movement(productInvoice.getQuantity(),
+                                MovementType.REVERSAL, OriginType.INVOICE, invoice.getNumberInvoice());
+                        branchProductRepository.removeQuantity(branchProduct, movement, connection);
+                    }
+                }
+                invoiceRepository.updateInvoiceReversed(invoice.getId(), connection);
+                connection.commit();
+            } catch (RuntimeException errorTransaction) {
+                try {
+                    connection.rollback();
+                } catch (SQLException errorRollback) {
+                    throw new RuntimeException(errorRollback);
+                }
+                throw errorTransaction;
+            }
         } catch (SQLException errorConnection) {
             throw new RuntimeException(errorConnection);
         }
@@ -55,8 +85,13 @@ public class InvoiceService {
                         }
                     }
                 }
-                invoice.completeProcessing();
-                invoiceRepository.save(invoice, connection);
+                if (!invoice.isReversed()) {
+                    invoice.completeProcessing();
+                    invoiceRepository.save(invoice, connection);
+                }
+                else {
+                    invoiceRepository.updateInvoiceProcessed(invoice.getId(), connection);
+                }
                 connection.commit();
             } catch (RuntimeException transactionError) {
                 try {
