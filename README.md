@@ -248,7 +248,7 @@ O script é responsável por:
 Antes de executar a aplicação:
 
 1. Instale e inicie o MySQL.
-2. Execute o script SQL disponibilizado no repositório.
+2. Execute o arquivo `database/almoxarifado.sql.`
 3. Configure as credenciais de acesso ao banco na aplicação.
 4. Execute os testes ou as operações do sistema.
 
