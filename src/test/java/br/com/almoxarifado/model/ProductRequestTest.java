@@ -138,7 +138,8 @@ public class ProductRequestTest {
         BranchProduct branchProduct = new BranchProduct(newProduct, branchSouth, 100, OriginType.INVOICE, "1234");
         Request request = new Request("155", branchSouth);
         ProductRequest productRequest = new ProductRequest(request, branchProduct, 80);
-        productRequest.validateCanBeProcessed(0);
+        productRequest.completeProcessing(0);
+
         assertThrows(NoReversionException.class, () ->
                 productRequest.validateCanBeReverted());
 
@@ -150,8 +151,10 @@ public class ProductRequestTest {
         Branch branchSouth = new Branch("001", "Branch South");
         BranchProduct branchProduct = new BranchProduct(newProduct, branchSouth, 100, OriginType.INVOICE, "1234");
         Request request = new Request("155", branchSouth);
+
         ProductRequest productRequest = new ProductRequest(request, branchProduct, 80);
-        assertThrows(NoReversionException.class, () ->
+
+        assertThrows(ProductRequestNotProcessedException.class, () ->
                 productRequest.validateCanBeReverted());
     }
 

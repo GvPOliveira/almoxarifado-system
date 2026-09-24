@@ -1,12 +1,8 @@
 package br.com.almoxarifado.model;
 
-import br.com.almoxarifado.exception.BranchAlreadyExists;
+import br.com.almoxarifado.exception.BranchAlreadyExistsException;
+import br.com.almoxarifado.exception.InvalidBranchIdException;
 import br.com.almoxarifado.exception.InvalidProductIdException;
-import br.com.almoxarifado.exception.ProductAlreadyExists;
-import br.com.almoxarifado.model.Branch;
-import br.com.almoxarifado.model.BranchProduct;
-import br.com.almoxarifado.model.OriginType;
-import br.com.almoxarifado.model.Product;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,7 +95,7 @@ public class BranchTest {
         assertEquals(0, branchSouth.getId());
         branchSouth.assignId(28);
         assertEquals(28, branchSouth.getId());
-        assertThrows(BranchAlreadyExists.class, () ->
+        assertThrows(BranchAlreadyExistsException.class, () ->
                 branchSouth.assignId(28));
     }
 
@@ -107,9 +103,9 @@ public class BranchTest {
     @Test
     void assignIdWithInvalidId() {
         Branch branchSouth = new Branch("001", "Branch South");
-        assertThrows(InvalidProductIdException.class, () ->
+        assertThrows(InvalidBranchIdException.class, () ->
                 branchSouth.assignId(0));
-        assertThrows(InvalidProductIdException.class, () ->
+        assertThrows(InvalidBranchIdException.class, () ->
                 branchSouth.assignId(-10));
     }
 

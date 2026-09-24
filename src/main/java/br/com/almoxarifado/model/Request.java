@@ -33,21 +33,7 @@ public class Request {
         return new Request(numberRequest, branch, productRequestMap);
     }
 
-    @Override
-    public String toString() {
-        String out = "";
-        for (ProductRequest productRequest : productRequestView.values()) {
-            out += "Product" + productRequest.getBranchProduct().getProduct().getCode() +
-                    "\nname: " + productRequest.getBranchProduct().getProduct().getDescription();
-        }
-        return "Request{" +
-                "numberRequest='" + numberRequest + '\'' +
-                ", branch=" + branch +
-                ", productRequestView=\n" + out + "\n" +
-                '}';
-    }
-
-    public void addProductRequestList(ProductRequest productRequest) {
+    public void addProductRequest(ProductRequest productRequest) {
         productRequestMap.put(productRequest.getBranchProduct().getProduct().getCode(), productRequest);
     }
 

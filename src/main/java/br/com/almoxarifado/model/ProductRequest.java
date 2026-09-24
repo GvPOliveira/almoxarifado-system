@@ -1,10 +1,8 @@
 package br.com.almoxarifado.model;
 
 import br.com.almoxarifado.exception.*;
-import br.com.almoxarifado.exception.*;
 
 public class ProductRequest {
-    private int id;
     private int idProductRequest;
     private Request request;
     private BranchProduct branchProduct;
@@ -62,11 +60,6 @@ public class ProductRequest {
         this.attendedQuantity = quantity;
         processed = true;
     }
-
-    public void defineAttendedQuantity(int attendedQuantity) {
-        this.attendedQuantity = attendedQuantity;
-    }
-
 
     public void addRequestQuantity(int requestedQuantity) {
         if (processed) {

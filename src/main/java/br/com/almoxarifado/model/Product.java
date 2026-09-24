@@ -1,8 +1,7 @@
 package br.com.almoxarifado.model;
 
 import br.com.almoxarifado.exception.InvalidProductIdException;
-import br.com.almoxarifado.exception.InvalidQuantityException;
-import br.com.almoxarifado.exception.ProductAlreadyExists;
+import br.com.almoxarifado.exception.ProductAlreadyExistsException;
 
 public class Product {
     private String code, description;
@@ -35,7 +34,7 @@ public class Product {
             throw new InvalidProductIdException();
         }
         if (this.id != 0) {
-            throw new ProductAlreadyExists();
+            throw new ProductAlreadyExistsException();
         } else {
             this.id = id;
         }

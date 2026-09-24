@@ -1,10 +1,6 @@
 package br.com.almoxarifado.model;
 
 import br.com.almoxarifado.exception.*;
-import br.com.almoxarifado.exception.InsufficientStockException;
-import br.com.almoxarifado.exception.InvalidQuantityException;
-import br.com.almoxarifado.exception.MovementNotFoundException;
-import br.com.almoxarifado.exception.ProductReversalProcessedException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,10 +63,10 @@ public class BranchProduct {
 
     public void assignId(int id) {
         if (id <= 0) {
-            throw new InvalidProductIdException();
+            throw new InvalidBranchProductIdException();
         }
         if (this.id != 0) {
-            throw new BranchAlreadyExists();
+            throw new BranchProductAlreadyExistsException();
         } else {
             this.id = id;
         }
@@ -84,8 +80,8 @@ public class BranchProduct {
 
     public static BranchProduct reconstructor(int bp_id, Product product, Branch branch,
                                               int quantity, String location) {
-        BranchProduct branchProduct = new BranchProduct(bp_id, product, branch, quantity, location);
-        return branchProduct;
+        return new BranchProduct(bp_id, product, branch, quantity, location);
+
     }
 
 
@@ -109,40 +105,6 @@ public class BranchProduct {
         }
     }
 
-    public void processReversal(int quantity, OriginType originType, String originNumber) {
-        if (quantity <= 0) {
-            throw new InvalidQuantityException();
-        }
-        findProductReversal(originType, originNumber);
-        for (int i = 0; i < movementList.size(); i++) {
-            if (movementList.get(i).getMovementType() == MovementType.ENTRY) {
-                if (movementList.get(i).getOriginType() == originType && movementList.get(i).getOriginNumber().equals(originNumber)) {
-                    this.quantity -= quantity;
-                    registerMovement(quantity, MovementType.REVERSAL, originType, originNumber);
-                    return;
-                }
-            }
-            if (movementList.get(i).getMovementType() == MovementType.OUTPUT) {
-                if (movementList.get(i).getOriginType() == originType && movementList.get(i).getOriginNumber().equals(originNumber)) {
-                    this.quantity += quantity;
-                    registerMovement(quantity, MovementType.REVERSAL, originType, originNumber);
-                    return;
-                }
-            }
-        }
-
-        throw new MovementNotFoundException();
-    }
-
-    public void findProductReversal(OriginType originType, String originNumber) {
-        for (int i = 0; i < movementList.size(); i++) {
-            if (movementList.get(i).getMovementType() == MovementType.REVERSAL && movementList.get(i).getOriginType()
-                    == originType && movementList.get(i).getOriginNumber().equals(originNumber)) {
-                throw new ProductReversalProcessedException();
-            }
-        }
-
-    }
 
 
     private void registerMovement(int quantity, MovementType type, OriginType originType, String originNumber) {
@@ -183,7 +145,7 @@ public class BranchProduct {
         return location;
     }
 
-    public void setLocation(String Location) {
-        this.location = Location;
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

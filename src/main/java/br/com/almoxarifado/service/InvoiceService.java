@@ -10,15 +10,15 @@ import java.sql.SQLException;
 
 public class InvoiceService {
 
-    private BranchProductRepository branchProductRepository;
-    private InvoiceRepository invoiceRepository;
+    private final BranchProductRepository branchProductRepository;
+    private final InvoiceRepository invoiceRepository;
 
     public InvoiceService(BranchProductRepository branchProductRepository, InvoiceRepository invoiceRepository) {
         this.branchProductRepository = branchProductRepository;
         this.invoiceRepository = invoiceRepository;
     }
 
-    public Invoice findByIdInvoice(int idInvoice) {
+    public Invoice findById(int idInvoice) {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         try (Connection connection = databaseConnection.connect()) {
             return invoiceRepository.findById(idInvoice, connection);

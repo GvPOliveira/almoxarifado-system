@@ -1,9 +1,7 @@
 package br.com.almoxarifado.model;
 
 import br.com.almoxarifado.exception.InvalidProductIdException;
-import br.com.almoxarifado.exception.InvalidQuantityException;
-import br.com.almoxarifado.exception.ProductAlreadyExists;
-import br.com.almoxarifado.model.Product;
+import br.com.almoxarifado.exception.ProductAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +32,7 @@ public class ProductTest {
         assertEquals(0, product.getId());
         product.assignId(28);
         assertEquals(28, product.getId());
-        assertThrows(ProductAlreadyExists.class, () ->
+        assertThrows(ProductAlreadyExistsException.class, () ->
                 product.assignId(28));
     }
 

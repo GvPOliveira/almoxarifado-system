@@ -16,7 +16,7 @@ public class ProductInvoice {
         if (quantity <= 0) {
             throw new InvalidQuantityException();
         }
-        if(product == null || destination == null ){
+        if (product == null || destination == null) {
             throw new NullPointerException();
         }
         this.product = product;

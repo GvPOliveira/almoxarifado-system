@@ -61,7 +61,7 @@ public class Invoice {
     }
 
     public void addProductInvoice(Product product, int quantity, Destination destination) {
-        if (processed) {
+        if (processed || reversed) {
             throw new InvoiceAlreadyProcessedException();
         }
         ProductInvoice newProductInvoice = new ProductInvoice(product, quantity, destination);

@@ -1,8 +1,7 @@
 package br.com.almoxarifado.model;
 
-import br.com.almoxarifado.exception.BranchAlreadyExists;
-import br.com.almoxarifado.exception.InvalidProductIdException;
-import br.com.almoxarifado.exception.ProductAlreadyExists;
+import br.com.almoxarifado.exception.BranchAlreadyExistsException;
+import br.com.almoxarifado.exception.InvalidBranchIdException;
 
 import java.util.*;
 
@@ -25,10 +24,10 @@ public class Branch {
 
     public void assignId(int id) {
         if (id <= 0) {
-            throw new InvalidProductIdException();
+            throw new InvalidBranchIdException();
         }
         if (this.id != 0) {
-            throw new BranchAlreadyExists();
+            throw new BranchAlreadyExistsException();
         } else {
             this.id = id;
         }
@@ -47,14 +46,12 @@ public class Branch {
     }
 
     public boolean addProduct(BranchProduct product) {
-        boolean search;
-        String chave = product.getProduct().getCode();
-        search = products.containsKey(chave);
-        if (!search) {
-            products.put(chave, product);
-            return true;
+        String code = product.getProduct().getCode();
+        if (products.containsKey(code)) {
+            return false;
         }
-        return false;
+        products.put(code, product);
+        return true;
     }
 
     public void receiveProduct(Product product, int quantity, OriginType originType, String originNumber) {
@@ -67,43 +64,6 @@ public class Branch {
         }
     }
 
-
-
-/*   Methods commented out for future review. Their responsibilities changed after the creation of new classes.
-
-    public boolean productReceipt(Product product, int quantity) {
-        boolean search;
-        String chave = product.getCode();
-        search = products.containsKey(chave);
-        if (!search) {
-            if (quantity <= 0) {
-                return false;
-            }
-            BranchProduct newProduct = new BranchProduct(product, this, quantity);
-            products.put(chave, newProduct);
-            return true;
-
-        } else {
-            BranchProduct existingProduct = findBranchProduct(chave);
-            boolean result = existingProduct.addQuantity(quantity);
-            return result;
-        }
-    }
-
-    public boolean productOutPut(Product product, int quantity) {
-        boolean search;
-        String chave = product.getCode();
-        search = products.containsKey(chave);
-        if (!search) {
-            return false;
-        } else {
-            BranchProduct existingProduct;
-            existingProduct = findBranchProduct(chave);
-            boolean result = existingProduct.removeQuantity(quantity);
-            return result;
-        }
-    }
-*/
 
     @Override
     public String toString() {

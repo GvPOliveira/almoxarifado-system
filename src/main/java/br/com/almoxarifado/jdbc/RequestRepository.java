@@ -2,7 +2,7 @@ package br.com.almoxarifado.jdbc;
 
 import br.com.almoxarifado.exception.ProductNotFoundInRequestException;
 import br.com.almoxarifado.exception.ProductRequestNotFoundException;
-import br.com.almoxarifado.exception.RequestNotFoundInBranch;
+import br.com.almoxarifado.exception.RequestNotFoundInBranchException;
 import br.com.almoxarifado.model.*;
 
 import java.sql.*;
@@ -127,7 +127,7 @@ public class RequestRepository {
             preparedStatement.setInt(2, idBranch);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (!resultSet.next()) {
-                    throw new RequestNotFoundInBranch();
+                    throw new RequestNotFoundInBranchException();
                 }
 
                 Product product = productReconstructor(resultSet);

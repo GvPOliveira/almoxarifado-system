@@ -65,8 +65,8 @@ public class Movement {
     }
 
     public static Movement reconstructMovement(UUID uuid, LocalDateTime date, int quantity, MovementType type, OriginType originType, String originNumber) {
-        Movement movement = new Movement(uuid, date, quantity, type, originType, originNumber);
-        return movement;
+        return new Movement(uuid, date, quantity, type, originType, originNumber);
+
     }
 
     public MovementType getMovementType() {
