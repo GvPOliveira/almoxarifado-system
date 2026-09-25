@@ -40,7 +40,7 @@ O sistema possui regras para garantir a consistência das operações:
 - Uma ProductRequest pode ser atendida parcialmente.
 - Uma ProductRequest processada não pode ser atendida novamente.
 - Um item atendido pode ser estornado individualmente.
-- Uma Invoice pode ser processada novamente após seu estorno.
+- Uma Invoice revertida pode ser processada novamente.
 - Operações que envolvem múltiplas alterações no banco de dados são executadas dentro de uma transação.
 
 ## Arquitetura
@@ -245,15 +245,14 @@ O script é responsável por:
 
 ### Configuração
 
-Antes de executar a aplicação:
+Antes de executar o projeto:
 
 1. Instale e inicie o MySQL.
-2. Execute o arquivo `database/almoxarifado.sql.`
-3. Configure as credenciais de acesso ao banco na aplicação.
+2. Execute o arquivo `database/almoxarifado.sql`.
+3. Configure o usuário e a senha da sua instalação do MySQL na classe responsável pela conexão.
 4. Execute os testes ou as operações do sistema.
 
 > Não versione credenciais reais no repositório. Utilize credenciais locais ou variáveis de ambiente para informações sensíveis.
-
 ## Próximos passos
 
 A versão atual representa a implementação do projeto utilizando **Java, JDBC e MySQL**.

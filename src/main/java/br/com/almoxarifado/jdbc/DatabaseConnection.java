@@ -8,7 +8,7 @@ import java.sql.DriverManager;
 public class DatabaseConnection {
         private final String URL = "jdbc:mysql://localhost:3306/almoxarifado";
         private final String USER = "root";
-        private final String PASSWORD = "biel123";
+        private final String PASSWORD = "suasenha";
 
     public Connection connect() throws SQLException {
         return DriverManager.getConnection(URL,USER,PASSWORD);

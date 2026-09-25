@@ -36,7 +36,7 @@ public class BranchProduct {
     }
 
     private BranchProduct(int id, Product product, Branch branch, int quantity, String location, List<Movement> movementList) {
-        if (quantity <= 0) {
+        if (quantity < 0) {
             throw new InvalidQuantityException();
         }
         this.id = id;
@@ -49,7 +49,7 @@ public class BranchProduct {
     }
 
     private BranchProduct(int id_bp, Product product, Branch branch, int quantity, String location) {
-        if (quantity <= 0) {
+        if (quantity < 0) {
             throw new InvalidQuantityException();
         }
         this.id = id_bp;

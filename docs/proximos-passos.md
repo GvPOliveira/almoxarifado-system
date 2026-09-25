@@ -1,38 +1,30 @@
 # Próximos passos
 
-## Etapa atual
+## V2 — Java + JDBC + MySQL
 
-Estamos desenvolvendo as entidades Request e ProductRequest.
+A segunda versão do projeto foi concluída, adicionando persistência em banco de dados com MySQL e JDBC.
 
-### Próximo passo
+Nesta etapa foram implementados:
 
-- [ ] Definir os atributos da ProductRequest.
-- [ ] Implementar quantidade solicitada.
-- [ ] Implementar quantidade atendida.
-- [ ] Criar validação para impedir atendimento maior que a quantidade solicitada.
+- Persistência das entidades no banco de dados.
+- Fluxo de entrada de estoque através de Invoices.
+- Fluxo de saída de estoque através de Requests.
+- Registro das movimentações de estoque.
+- Reversão de Invoices e ProductRequests.
+- Transações para operações de estoque.
+- Validações e exceções relacionadas às regras de negócio.
 
-## Próximas etapas
+## V3 — Spring Boot + JPA/Hibernate
 
-### Atendimento de requisição
+A próxima etapa será reconstruir o projeto utilizando Spring Boot, JPA e Hibernate.
 
-- [ ] Implementar atendimento parcial.
-- [ ] Validar saldo disponível.
-- [ ] Atualizar quantidade atendida.
-- [ ] Registrar movimentação OUTPUT.
+O objetivo será utilizar a mesma base de regras de negócio da versão anterior para comparar as abordagens de persistência e desenvolvimento.
 
-### Estorno
+Próximas etapas:
 
-- [ ] Definir relação entre Request e movimentações.
-- [ ] Implementar REVERSAL.
-- [ ] Impedir estorno duplicado.
-- [ ] Definir comportamento para estorno parcial.
-
-### Futuro
-
-- [ ] Controle de período mensal.
-- [ ] Persistência em banco de dados.
-- [ ] JDBC.
-- [ ] Spring Boot.
-- [ ] API REST.
-- [ ] Autenticação.
-- [ ] Docker.
+- [ ] Reconstruir o projeto utilizando Spring Boot.
+- [ ] Implementar persistência com JPA/Hibernate.
+- [ ] Criar API REST.
+- [ ] Implementar autenticação e autorização.
+- [ ] Avaliar melhorias de arquitetura e organização.
+- [ ] Dockerizar a aplicação.

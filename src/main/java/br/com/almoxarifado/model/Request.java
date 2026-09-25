@@ -2,7 +2,6 @@ package br.com.almoxarifado.model;
 
 import br.com.almoxarifado.exception.InvalidQuantityException;
 import br.com.almoxarifado.exception.ProductNotFoundInBranchException;
-import br.com.almoxarifado.exception.ProductNotFoundInRequestException;
 
 import java.util.Collections;
 import java.util.HashMap;
