@@ -243,30 +243,46 @@ O script é responsável por:
 - Criar as chaves estrangeiras
 - Preparar a estrutura necessária para execução do sistema
 
-### Configuração
+## Como executar
 
-Antes de executar o projeto:
+### Pré-requisitos
 
-1. Instale e inicie o MySQL.
-2. Execute o arquivo `database/almoxarifado.sql`.
-3. Configure o usuário e a senha da sua instalação do MySQL na classe responsável pela conexão.
-4. Execute os testes ou as operações do sistema.
+- Java 16 ou superior
+- Maven
+- MySQL 8 (só para as operações que gravam no banco)
 
-> Não versione credenciais reais no repositório. Utilize credenciais locais ou variáveis de ambiente para informações sensíveis.
+### Rodar os testes
+
+Os testes do domínio não dependem do banco de dados, então rodam sem MySQL instalado:
+
+```bash
+git clone https://github.com/GvPOliveira/almoxarifado-system.git
+cd almoxarifado-system
+mvn test
+```
+
+### Preparar o banco de dados
+
+1. Com o MySQL em execução, rode o script que cria o banco `almoxarifado` e as tabelas:
+
+   ```bash
+   mysql -u seu_usuario -p < database/almoxarifado.sql
+   ```
+
+2. Ajuste a URL, o usuário e a senha da sua instalação em `src/main/java/br/com/almoxarifado/jdbc/DatabaseConnection.java`.
+
+> Não versione credenciais reais no repositório. Use credenciais locais ou variáveis de ambiente para informações sensíveis.
+
+## Versões
+
+| Versão | Tag | O que mudou |
+| --- | --- | --- |
+| v1 | [`v0.1.0`](https://github.com/GvPOliveira/almoxarifado-system/tree/v0.1.0) | Domínio em Java puro com POO, Collections, exceções próprias e testes unitários |
+| v2 | [`v2.0`](https://github.com/GvPOliveira/almoxarifado-system/tree/v2.0) | Persistência em MySQL com JDBC, SQL escrito à mão e transações com `commit`/`rollback` |
+| v3 | [almoxarifado-v3](https://github.com/GvPOliveira/almoxarifado-v3) | Reconstrução com Spring Boot e Spring Data JPA, exposta como API REST |
+
 ## Próximos passos
 
-A versão atual representa a implementação do projeto utilizando **Java, JDBC e MySQL**.
+Esta versão representa a implementação do projeto com **Java, JDBC e MySQL**.
 
-Como próxima etapa do estudo, o projeto será reconstruído utilizando **Spring Boot**, transformando o sistema em uma **API REST**.
-
-A reconstrução permitirá comparar as responsabilidades que foram implementadas manualmente com JDBC com as abstrações oferecidas pelo ecossistema Spring.
-
-Possíveis evoluções futuras:
-
-- API REST com Spring Boot
-- JPA/Hibernate
-- Tratamento global de Exceptions
-- Autenticação e autorização
-- Docker
-- Documentação da API
-- Novas regras e funcionalidades de negócio
+A etapa seguinte já está em andamento no repositório [almoxarifado-v3](https://github.com/GvPOliveira/almoxarifado-v3), que reconstrói o mesmo domínio com **Spring Boot** e o expõe como uma **API REST**. Ter feito a persistência manualmente aqui permite comparar o que antes era escrito à mão com as abstrações do ecossistema Spring.
