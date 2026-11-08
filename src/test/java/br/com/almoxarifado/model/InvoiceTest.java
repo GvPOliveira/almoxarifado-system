@@ -50,18 +50,6 @@ public class InvoiceTest {
         assertEquals(0, invoice.getProductInvoiceView().size());
     }
 
-    /* test invoice service
-        @Test
-        void cannotProcessInvoiceWithoutProducts() {
-            BranchProductRepository branchProductRepository = new BranchProductRepository();
-            InvoiceService invoiceService = new InvoiceService(branchProductRepository);
-            Branch branchSouth = new Branch("001", "Branch South");
-            Invoice invoice = new Invoice("123", branchSouth);
-e            assertThrows(CannotProcessInvoiceWithoutProductsException.class, () ->
-                    invoiceService.processInvoice(invoice));
-            assertFalse(invoice.isProcessed());
-        }
-    */
     @Test
     void cannotAddProductInvoiceWithInvoiceProcessed() {
         Product newProduct = new Product("1", "Parafuso 1/2 x 1");
@@ -74,6 +62,5 @@ e            assertThrows(CannotProcessInvoiceWithoutProductsException.class, ()
                 invoice.addProductInvoice(newProduct, 100, Destination.STOCK));
         assertEquals(1, invoice.getProductInvoiceView().size());
     }
-
 
 }

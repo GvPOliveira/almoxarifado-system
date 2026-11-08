@@ -22,40 +22,6 @@ public class ProductRequestTest {
         assertFalse(productRequest.isReversed());
     }
 
-    /*
-            @Test
-            void attendRequest() {
-                Product newProduct = new Product("1", "Parafuso 1/2 x 1");
-                Branch branchSouth = new Branch("001", "Branch South");
-                BranchProduct branchProduct = new BranchProduct(newProduct, branchSouth, 100, OriginType.INVOICE, "1234");
-                branchSouth.addProduct(branchProduct);
-                Request request = new Request("155", branchSouth);
-                request.addProductRequest(newProduct, 100);
-                ProductRequest productRequest = request.findProductRequest("1");
-                productRequest.attendedQuantity(50);
-                assertEquals(50, branchProduct.getQuantity());
-                assertEquals(50, productRequest.getAttendedQuantity());
-                assertEquals(true, productRequest.isProcessed());
-                assertEquals(false, productRequest.isReversed());
-            }
-
-
-            @Test
-            void addQuantityZero() {
-                Product newProduct = new Product("1", "Parafuso 1/2 x 1");
-                Branch branchSouth = new Branch("001", "Branch South");
-                BranchProduct branchProduct = new BranchProduct(newProduct, branchSouth, 100, OriginType.INVOICE, "1234");
-                branchSouth.addProduct(branchProduct);
-                Request request = new Request("155", branchSouth);
-                ProductRequest productRequest = request.findProductRequest("1");
-                request.addProductRequest(newProduct, 100);
-                productRequest.attendedQuantity(0);
-                assertEquals(100, branchProduct.getQuantity());
-                assertEquals(0, productRequest.getAttendedQuantity());
-                assertEquals(true, productRequest.isProcessed());
-                assertEquals(false, productRequest.isReversed());
-            }
-    */
     @Test
     void cannotAttendNegativeQuantity() {
         Product newProduct = new Product("1", "Parafuso 1/2 x 1");
@@ -99,24 +65,6 @@ public class ProductRequestTest {
         assertTrue(productRequest.isProcessed());
     }
 
-/*
-    @Test
-    void reversal() {
-        Product newProduct = new Product("1", "Parafuso 1/2 x 1");
-        Branch branchSouth = new Branch("001", "Branch South");
-        BranchProduct branchProduct = new BranchProduct(newProduct, branchSouth, 100, OriginType.INVOICE, "1234");
-        Request request = new Request("155", branchSouth);
-        ProductRequest productRequest = new ProductRequest(request, branchProduct, 80);
-        productRequest.attendedQuantity(50);
-        productRequest.reversal();
-        assertEquals(100, branchProduct.getQuantity());
-        assertEquals(50, productRequest.getAttendedQuantity());
-        assertEquals(true, productRequest.isProcessed());
-        assertEquals(true, productRequest.isReversed());
-    }
-*/
-
-
     @Test
     void reversalDuplicated() {
         Product newProduct = new Product("1", "Parafuso 1/2 x 1");
@@ -129,7 +77,6 @@ public class ProductRequestTest {
         assertThrows(ProductRequestAlreadyRevertedException.class, () ->
                 productRequest.validateCanBeReverted());
     }
-
 
     @Test
     void reversalZero() {
@@ -183,6 +130,5 @@ public class ProductRequestTest {
         assertThrows(InvalidQuantityException.class, () ->
                 new ProductRequest(request, branchProduct, -20));
     }
-
 
 }
